@@ -33,7 +33,15 @@ async def parse(response: Response, source_config: Dict[str, Any], client: Async
         resp.raise_for_status()
         data = resp.json()
 
+        # items 是一个 list
         items = data.get("data", {}).get("items", [])
+
+        print(f"[WallstreetcnLive] 返回 {len(items)} 条")
+        for i, item in enumerate(items[:5]):
+            title = item.get("title") or item.get("content_text") or item.get("content_short")
+            uri = item.get("uri")
+            display_time = item.get("display_time")
+            print(f"  [{i}] title={title[:40]}..., uri={uri}, time={display_time}")
 
         for item in items:
             title = item.get("title") or item.get("content_text") or item.get("content_short")

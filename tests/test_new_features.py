@@ -121,7 +121,7 @@ class TestTextDeduplicator:
             ),
         ]
 
-        filtered = deduper._filter_by_similarity(articles)
+        filtered = deduper._filter_by_batch_similarity(articles)
         # 相似标题只保留一个
         assert len(filtered) == 2
         titles = [a.title for a in filtered]

@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### 关键参考文档
 
-- 项目哲学：[README.md](README.md)
+- 项目哲学：[.README.md](.README.md)
 - 投资思考框架：`D:\my_obsidian\gitee_vault\mynotes\00投资\0操作系统\核心思考\投资的核心思考.md`
 - 伟大企业档案 : D:\my_obsidian\gitee_vault\mynotes\00投资\0操作系统\核心思考\伟大企业.md
 - 设计方案：[docs/design.md](docs/design.md)

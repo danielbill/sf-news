@@ -10,7 +10,7 @@ from pathlib import Path
 
 from .storage import TimelineDB
 from .api.crawl import router as crawl_router
-from .api import scheduler as scheduler_api
+from .api.admin import router as admin_router
 from .scheduler import SchedulerManager
 
 
@@ -23,7 +23,6 @@ async def lifespan(app: FastAPI):
 
     # 初始化并启动调度器
     scheduler = SchedulerManager(config_dir="config")
-    scheduler_api.set_scheduler(scheduler)
     await scheduler.start()
 
     yield
@@ -55,7 +54,7 @@ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
 # 注册 API 路由
 app.include_router(crawl_router)
-app.include_router(scheduler_api.router)
+app.include_router(admin_router)
 
 
 @app.get("/", response_class=HTMLResponse)

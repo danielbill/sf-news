@@ -112,6 +112,25 @@
             display: block;
         }
 
+        /* 最后刷新时间 */
+        .last-refresh {
+            margin-top: 12px;
+            font-size: 0.85rem;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .last-refresh .time {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .last-refresh .never {
+            color: #999;
+        }
+
         /* 新闻列表 */
         .news-section {
             margin-top: 20px;
@@ -226,6 +245,187 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
+
+        /* 清空按钮 */
+        .clear-button {
+            background: #ff5252;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: auto;
+        }
+
+        .clear-button:hover {
+            background: #ff1744;
+        }
+
+        .button-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 测试按钮 */
+        .test-button {
+            background: linear-gradient(135deg, #43a047 0%, #66bb6a 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .test-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(67, 160, 71, 0.4);
+        }
+
+        .test-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* 弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            padding: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        /* 测试结果表格 */
+        .test-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .test-table th,
+        .test-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .test-table th {
+            background: #f5f5f5;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .test-table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-badge.ok {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .status-badge.empty {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-badge.error {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .test-loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .test-loading .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f0f0f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -237,11 +437,38 @@
     <div class="container">
         <!-- 抓取控制区 -->
         <div class="crawl-section">
-            <button class="crawl-button" id="crawlBtn" onclick="triggerCrawl()">
-                <span class="icon">📡</span>
-                <span>立即抓取</span>
-            </button>
+            <div class="button-group">
+                <button class="crawl-button" id="crawlBtn" onclick="triggerCrawl()">
+                    <span class="icon">📡</span>
+                    <span>立即抓取</span>
+                </button>
+                <button class="test-button" id="testBtn" onclick="testSources()">
+                    <span>🔍</span>
+                    <span>测试新闻源</span>
+                </button>
+                <button class="clear-button" onclick="clearTodayData()">🗑️ 清空今日</button>
+            </div>
             <div class="crawl-status" id="crawlStatus"></div>
+            <div class="last-refresh" id="lastRefresh">
+                <span>最后刷新:</span>
+                <span class="never">暂无</span>
+            </div>
+        </div>
+
+        <!-- 测试新闻源弹窗 -->
+        <div class="modal-overlay" id="testModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3>🔍 新闻源测试</h3>
+                    <button class="modal-close" onclick="closeTestModal()">&times;</button>
+                </div>
+                <div class="modal-body" id="testModalBody">
+                    <div class="test-loading">
+                        <div class="spinner"></div>
+                        <div>正在测试新闻源...</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 新闻列表区 -->
@@ -270,6 +497,28 @@
 
         // 抓取状态管理
         let isCrawling = false;
+        let lastCrawlTime = null;
+
+        // 格式化时间显示
+        function formatTime(isoString) {
+            if (!isoString) return null;
+            const date = new Date(isoString);
+            return date.toLocaleTimeString('zh-CN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        // 更新最后刷新时间显示
+        function updateLastRefreshTime() {
+            const refreshEl = document.getElementById('lastRefresh');
+            if (lastCrawlTime) {
+                refreshEl.innerHTML = `<span>最后刷新:</span><span class="time">${formatTime(lastCrawlTime)}</span>`;
+            } else {
+                refreshEl.innerHTML = `<span>最后刷新:</span><span class="never">暂无</span>`;
+            }
+        }
 
         // 显示状态消息
         function showStatus(message, type = 'info') {
@@ -281,6 +530,33 @@
                 setTimeout(() => {
                     statusEl.style.display = 'none';
                 }, 5000);
+            }
+        }
+
+        // 清空今日数据
+        async function clearTodayData() {
+            if (!confirm('确定要清空今日所有数据吗？\n这将删除数据库、文章文件和内存缓存')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/admin/cleartodaynews', {
+                    method: 'POST'
+                });
+                const result = await response.json();
+
+                console.log('清空响应:', result);
+
+                if (result.code === 200) {
+                    showStatus(result.message || '清空成功', 'success');
+                    // 刷新页面
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showStatus('清空失败：' + (result.message || JSON.stringify(result)), 'error');
+                }
+            } catch (error) {
+                console.error('清空错误:', error);
+                showStatus('清空失败：' + error.message, 'error');
             }
         }
 
@@ -301,6 +577,11 @@
                 const result = await response.json();
 
                 if (result.code === 200) {
+                    // 更新最后刷新时间
+                    const now = new Date().toISOString();
+                    lastCrawlTime = now;
+                    updateLastRefreshTime();
+
                     if (result.data.total_saved > 0) {
                         showStatus(
                             `抓取完成！共抓取 ${result.data.total_fetched} 条，筛选 ${result.data.total_filtered} 条，新增 ${result.data.total_saved} 条`,
@@ -309,6 +590,9 @@
                     } else {
                         showStatus(result.message, 'info');
                     }
+                } else if (result.code === 429) {
+                    // 频率限制
+                    showStatus(result.message, 'info');
                 } else {
                     showStatus('抓取失败：' + result.message, 'error');
                 }
@@ -409,8 +693,114 @@
             return sourceNames[source] || source;
         }
 
-        // 页面加载时获取新闻
-        window.addEventListener('DOMContentLoaded', loadNews);
+        // 加载抓取状态（含最后刷新时间）
+        async function loadCrawlStatus() {
+            try {
+                const response = await fetch('/api/crawl/status');
+                const result = await response.json();
+                if (result.code === 200 && result.data.last_crawl_time) {
+                    lastCrawlTime = result.data.last_crawl_time;
+                    updateLastRefreshTime();
+                }
+            } catch (error) {
+                console.error('Failed to load crawl status:', error);
+            }
+        }
+
+        // 页面加载时获取新闻和状态
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadCrawlStatus();
+            await loadNews();
+        });
+
+        // 测试新闻源
+        let isTesting = false;
+
+        async function testSources() {
+            if (isTesting) return;
+
+            const btn = document.getElementById('testBtn');
+            isTesting = true;
+            btn.disabled = true;
+
+            // 显示弹窗
+            const modal = document.getElementById('testModal');
+            const body = document.getElementById('testModalBody');
+            modal.classList.add('active');
+            body.innerHTML = `
+                <div class="test-loading">
+                    <div class="spinner"></div>
+                    <div>正在测试新闻源...</div>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('/admin/source_test');
+                const result = await response.json();
+
+                if (result.code === 200) {
+                    const sources = result.data.sources;
+
+                    let tableHtml = `
+                        <table class="test-table">
+                            <thead>
+                                <tr>
+                                    <th>新闻源</th>
+                                    <th>返回量</th>
+                                    <th>状态</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    sources.forEach(source => {
+                        const statusClass = source.status;
+                        const statusText = {
+                            'ok': '✅ 正常',
+                            'empty': '⚠️ 无数据',
+                            'error': '❌ 失败'
+                        }[source.status] || source.status;
+
+                        tableHtml += `
+                            <tr>
+                                <td>${source.name}</td>
+                                <td>${source.count} 条</td>
+                                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                            </tr>
+                        `;
+                    });
+
+                    tableHtml += `
+                            </tbody>
+                        </table>
+                        <p style="margin-top: 15px; color: #666; font-size: 0.9rem;">
+                            共测试 ${result.data.total} 个新闻源，测试时间: ${new Date(result.data.timestamp).toLocaleString('zh-CN')}
+                        </p>
+                    `;
+
+                    body.innerHTML = tableHtml;
+                } else {
+                    body.innerHTML = `<p style="color: #d32f2f; text-align: center;">测试失败: ${result.message}</p>`;
+                }
+            } catch (error) {
+                body.innerHTML = `<p style="color: #d32f2f; text-align: center;">测试失败: ${error.message}</p>`;
+            } finally {
+                isTesting = false;
+                btn.disabled = false;
+            }
+        }
+
+        function closeTestModal() {
+            const modal = document.getElementById('testModal');
+            modal.classList.remove('active');
+        }
+
+        // 点击遮罩关闭弹窗
+        document.getElementById('testModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeTestModal();
+            }
+        });
     </script>
 </body>
 </html>

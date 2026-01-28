@@ -36,7 +36,15 @@
       "Bash(d:/ai_tools/Singularity-Front/venv/Scripts/python.exe -c:*)",
       "Bash(del:*)",
       "Bash(del /f d:ai_toolsSingularity-Frontsrccrawlersparserscls.py)",
-      "Bash(d:/ai_tools/Singularity-Front/venv/Scripts/python.exe -m pytest:*)"
+      "Bash(d:/ai_tools/Singularity-Front/venv/Scripts/python.exe -m pytest:*)",
+      "Bash(d:\\\\ai_tools\\\\Singularity-Front\\\\venv\\\\Scripts\\\\python.exe -m pytest:*)",
+      "Bash(cmd /c \"cd /d d:\\\\ai_tools\\\\Singularity-Front && venv\\\\Scripts\\\\python.exe -m pytest tests/ -v --tb=short\")",
+      "Bash(powershell -Command \"cd ''d:\\\\ai_tools\\\\Singularity-Front''; .\\\\venv\\\\Scripts\\\\python.exe -m pytest tests/ -v --tb=short\")",
+      "Bash(powershell -Command \"cd ''d:\\\\ai_tools\\\\Singularity-Front''; .\\\\venv\\\\Scripts\\\\python.exe -c \"\"from src.storage import TimelineDB; from datetime import date; db = TimelineDB\\(date.today\\(\\)\\); db.init_db\\(\\); articles = db.list_articles\\(limit=100\\); print\\(''Total:'', len\\(articles\\)\\); [print\\(f''{a[\"\"title\"\"][:60]}... | {a[\"\"source\"\"]}''\\) for a in articles if ''深圳'' in a[''title''] or ''家具'' in a[''title'']]\"\"\")",
+      "Bash(powershell:*)",
+      "Bash(tasklist)",
+      "Bash(cmd //c \"taskkill /F /IM python.exe\")",
+      "Bash(dir \"d:\\\\ai_tools\\\\Singularity-Front\\\\data\\\\db\")"
     ]
   }
 }

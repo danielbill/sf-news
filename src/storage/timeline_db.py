@@ -116,3 +116,14 @@ class TimelineDB:
                 (url,)
             )
             return cursor.fetchone() is not None
+
+    def clear_all(self) -> int:
+        """清空所有文章数据
+
+        Returns:
+            删除的行数
+        """
+        with self.get_connection() as conn:
+            cursor = conn.execute("DELETE FROM articles")
+            conn.commit()
+            return cursor.rowcount

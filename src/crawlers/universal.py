@@ -136,12 +136,18 @@ class UniversalCrawler:
         filtered = []
         all_keywords = self.keywords
 
+        print(f"[Filter] 关键词数量: {len(all_keywords)}, 前10个: {all_keywords[:10]}")
+
         for article in articles:
             # 检查标题和 URL
             text_to_check = f"{article.title} {article.url}".lower()
             if any(kw.lower() in text_to_check for kw in all_keywords):
                 filtered.append(article)
+            else:
+                if len(filtered) < 3:  # 只打印前几个没匹配的
+                    print(f"[Filter] 未匹配: {article.title[:40]}...")
 
+        print(f"[Filter] 过滤后剩余: {len(filtered)}/{len(articles)}")
         return filtered
 
     async def _fetch_contents(self, articles: List[Article]):
