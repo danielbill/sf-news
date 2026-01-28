@@ -1,0 +1,27 @@
+# 抓取器配置文件
+
+# 抓取策略
+strategy:
+  interval: 900       # 抓取间隔（秒），默认 15分钟
+  min_interval: 900   # 最小抓取间隔（秒），15分钟硬编码限制
+  concurrent: 3       # 并发抓取数量
+
+# 网络配置
+network:
+  timeout: 30         # 请求超时（秒）
+  retry: 3            # 失败重试次数
+  retry_delay: 5      # 重试延迟（秒）
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+# 存储配置
+storage:
+  save_content: true  # 是否保存正文到文件
+  dedup: true         # 是否去重
+  content_format: "markdown"  # 正文保存格式：markdown | json
+  db_path: "data/db/scheduler.sqlite"  # 调度器数据库路径
+
+# 日志配置
+logging:
+  level: "INFO"        # DEBUG | INFO | WARNING | ERROR
+  save_logs: true     # 是否保存日志到文件
+  log_dir: "logs"      # 日志目录

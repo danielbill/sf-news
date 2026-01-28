@@ -1,0 +1,83 @@
+# 新闻筛选关键词配置
+# 用于爬虫过滤相关新闻
+
+# 人物关键词
+people:
+  musk:
+    - "马斯克"
+    - "埃隆·马斯克"
+    - "Elon Musk"
+    - "老马"
+
+  huang:
+    - "黄仁勋"
+    - "Jensen Huang"
+    - "老黄"
+    - "皮衣刀客"
+
+  altman:
+    - "奥尔特曼"
+    - "Sam Altman"
+    - "萨姆·奥尔特曼"
+
+# 公司关键词
+companies:
+  TSLA:
+    - "特斯拉"
+    - "Tesla"
+    - "TSLA"
+
+  SPACEX:
+    - "SpaceX"
+    - "星舰"
+    - "Starship"
+    - "星链"
+    - "Starlink"
+    - "猎鹰"
+
+  X:
+    - "X Corp"
+    - "Twitter"
+
+  XAI:
+    - "xAI"
+    - "Grok"
+
+  NVDA:
+    - "英伟达"
+    - "NVIDIA"
+    - "NVDA"
+    - "辉达"
+
+  OPENAI:
+    - "OpenAI"
+    - "ChatGPT"
+    - "GPT"
+
+# 话题关键词（通用，与奇点人物相关）
+topics:
+  # 马斯克相关
+  - ["FSD", "自动驾驶", "Autopilot"]
+  - ["Tesla Bot", "擎天柱", "机器人"]
+  - ["星舰", "Starship", "火星"]
+  - ["星链", "Starlink", "卫星互联网"]
+  - ["超级工厂", "Gigafactory"]
+  - ["Dojo", "训练芯片"]
+
+  # 黄仁勋相关
+  - ["GPU", "显卡"]
+  - ["CUDA", "生态"]
+  - ["Blackwell", "H100", "H200"]
+  - ["AI 芯片", "算力"]
+  - ["数据中心"]
+
+  # AI 通用
+  - ["AGI", "通用人工智能"]
+  - ["大模型", "LLM"]
+  - ["生成式 AI", "AIGC"]
+  - ["深度学习", "神经网络"]
+
+# 说明：
+# people: 按 legend.yaml 中的人物 ID 分类
+# companies: 按 company.yaml 中的公司 ID 分类
+# topics: 通用话题关键词，列表形式表示这些词属于同一话题组

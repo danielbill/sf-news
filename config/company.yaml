@@ -1,0 +1,83 @@
+# 公司档案配置文件
+# Company = 奇点人物领导的公司及核心关联公司
+
+# 奇点公司（由奇点人物直接领导）
+companies:
+  # 特斯拉
+  - id: "TSLA"
+    name: "Tesla, Inc."
+    name_cn: "特斯拉"
+    tier: 1
+    type: "singularity"
+    legend_id: "musk"
+    stock: "NASDAQ:TSLA"
+    description: "电动汽车、储能、AI 机器人公司，推动汽车电动化革命"
+    keywords: ["电动车", "EV", "FSD", "Tesla Bot", "Dojo"]
+
+  # SpaceX
+  - id: "SPACEX"
+    name: "SpaceX"
+    name_cn: "太空探索技术公司"
+    tier: 1
+    type: "singularity"
+    legend_id: "musk"
+    description: "商业航天公司，星舰、星链项目推动人类成为多行星物种"
+    keywords: ["星舰", "星链", "Starship", "Starlink", "猎鹰火箭"]
+
+  # X Corp
+  - id: "X"
+    name: "X Corp"
+    name_cn: "X 公司"
+    tier: 1
+    type: "singularity"
+    legend_id: "musk"
+    description: "社交媒体平台，前身为 Twitter"
+    keywords: ["Twitter", "社交网络", "自由言论"]
+
+  # xAI
+  - id: "XAI"
+    name: "xAI"
+    name_cn: "xAI"
+    tier: 1
+    type: "singularity"
+    legend_id: "musk"
+    description: "人工智能公司，Grok 模型开发者"
+    keywords: ["Grok", "大模型", "AGI"]
+
+  # 英伟达
+  - id: "NVDA"
+    name: "NVIDIA Corporation"
+    name_cn: "英伟达"
+    tier: 1
+    type: "singularity"
+    legend_id: "huang"
+    stock: "NASDAQ:NVDA"
+    description: "GPU、AI 芯片巨头，CUDA 生态构建者，AI 算力时代基石"
+    keywords: ["GPU", "CUDA", "Blackwell", "H100", "AI 芯片"]
+
+  # OpenAI
+  - id: "OPENAI"
+    name: "OpenAI"
+    name_cn: "OpenAI"
+    tier: 1
+    type: "singularity"
+    legend_id: "altman"
+    description: "人工智能研究实验室，ChatGPT、GPT-4 开发者"
+    keywords: ["ChatGPT", "GPT-4", "AGI", "大语言模型"]
+
+# 公司关系
+relations:
+  - from_id: "TSLA"
+    to_id: "NVDA"
+    type: "partner"
+    description: "AI 合作伙伴，特斯拉使用 NVIDIA GPU 训练 FSD"
+
+  - from_id: "SPACEX"
+    to_id: "STARLINK"
+    type: "subsidiary"
+    description: "星链是 SpaceX 的卫星互联网项目"
+
+# 说明：
+# tier: 1（奇点公司/一级供应商）| 2（二级供应商）| 3（三级）
+# type: singularity（奇点公司）| tier1（一级供应商）| tier2（二级供应商）
+# legend_id: 对应 legend.yaml 中的奇点人物 ID

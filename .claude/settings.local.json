@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(D:PythonPython311python.exe -m venv venv)",
+      "Bash(/d/Python/Python311/python.exe -m venv:*)",
+      "Bash(./venv/Scripts/pip install:*)",
+      "Bash(./venv/Scripts/pytest:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(.venvScriptspython -m pytest tests/ -v)",
+      "Bash(python -m pytest:*)",
+      "Bash(pip show:*)",
+      "Bash(pip install:*)",
+      "Bash(.venvScriptspip install pytest-asyncio)",
+      "Bash(\"d:/ai_tools/Singularity-Front/.venv/Scripts/pip.exe\" install pytest-asyncio)",
+      "Bash(\"d:/ai_tools/Singularity-Front/venv/Scripts/pip.exe\" install:*)",
+      "Bash(\"d:/ai_tools/Singularity-Front/venv/Scripts/pytest.exe\" tests/ -v)",
+      "Bash(\"d:/ai_tools/Singularity-Front/venv/Scripts/python.exe\" -m uvicorn:*)",
+      "Bash(curl:*)",
+      "Bash(\"d:/ai_tools/Singularity-Front/venv/Scripts/python.exe\" -c:*)",
+      "Bash(\"d:/ai_tools/Singularity-Front/venv/Scripts/python.exe\":*)",
+      "Bash(python:*)",
+      "Bash(\"d:/ai_tools/Singularity-Front/venv/Scripts/python.exe\" -m pytest:*)",
+      "Bash(\"d:/ai_tools/Singularity-Front/venv/Scripts/python.exe\" -c \"\nfrom src.crawlers.base import BaseCrawler\n\nclass TestCrawler\\(BaseCrawler\\):\n    async def fetch\\(self\\):\n        return []\n\ncrawler = TestCrawler\\(\\)\nprint\\(crawler._sanitize_filename\\(''马斯克宣布星舰发射计划''\\)\\)\nprint\\(crawler._sanitize_filename\\(''Elon Musks Starship Launch Success''\\)\\)\nprint\\(crawler._sanitize_filename\\(''测试特殊字符<>:\"\"/\\\\\\\\|?*''\\)\\)\nprint\\(crawler._sanitize_filename\\(''''\\)\\)\n\")",
+      "Bash(d:\\\\ai_tools\\\\Singularity-Front\\\\.venv\\\\Scripts\\\\python.exe -m pytest:*)",
+      "Bash(del \"d:\\\\ai_tools\\\\Singularity-Front\\\\data\\\\db\\\\timeline_2026-01-28.sqlite\")",
+      "Bash(.venv/Scripts/python.exe:*)",
+      "Bash(venv/Scripts/python.exe:*)",
+      "Bash(venv/Scripts/pip.exe install:*)",
+      "Bash(netstat:*)",
+      "Bash(taskkill:*)",
+      "Bash(cd:*)",
+      "Bash(d:ai_toolsSingularity-Front.venvScriptspython.exe -c \"\nimport httpx\nimport asyncio\n\nasync def test\\(\\):\n    url = ''https://api-one.wallstcn.com/apiv1/content/lives?channel=global-channel&limit=50''\n    async with httpx.AsyncClient\\(\\) as client:\n        resp = await client.get\\(url, timeout=30\\)\n        data = resp.json\\(\\)\n        items = data.get\\(''data'', {}\\).get\\(''items'', []\\)\n        \n        print\\(f''总共 {len\\(items\\)} 条快讯''\\)\n        print\\(''查找 OpenAI 相关:''\\)\n        for item in items:\n            title = item.get\\(''title''\\) or item.get\\(''content_text''\\) or item.get\\(''content_short'', ''''\\)\n            if ''openai'' in title.lower\\(\\) or ''孙正义'' in title:\n                print\\(f''  - {title}''\\)\n                print\\(f''    URI: {item.get\\(\"\"uri\"\"\\)}''\\)\n\nasyncio.run\\(test\\(\\)\\)\n\")",
+      "Bash(d:/ai_tools/Singularity-Front/.venv/Scripts/python.exe -c:*)",
+      "Bash(/d/ai_tools/Singularity-Front/.venv/Scripts/python.exe -c:*)",
+      "Bash(d:/ai_tools/Singularity-Front/venv/Scripts/python.exe -c:*)",
+      "Bash(del:*)",
+      "Bash(del /f d:ai_toolsSingularity-Frontsrccrawlersparserscls.py)",
+      "Bash(d:/ai_tools/Singularity-Front/venv/Scripts/python.exe -m pytest:*)"
+    ]
+  }
+}

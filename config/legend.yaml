@@ -1,0 +1,35 @@
+# 奇点人物配置文件
+# Legend = 能够引发文明级跃迁的"伟人"
+
+legends:
+  # 埃隆·马斯克
+  - id: "musk"
+    name: "Elon Musk"
+    name_cn: "马斯克"
+    tier: "singularity"
+    company_id: "TSLA"
+    role: "CEO"
+    description: "特斯拉、SpaceX、X 创始人，推动电动车、商业航天、AI 多个领域革命"
+
+  # 黄仁勋
+  - id: "huang"
+    name: "Jensen Huang"
+    name_cn: "黄仁勋"
+    tier: "singularity"
+    company_id: "NVDA"
+    role: "CEO"
+    description: "英伟达创始人，GPU 之父，AI 算力时代奠基人"
+
+  # 萨姆·奥尔特曼
+  - id: "altman"
+    name: "Sam Altman"
+    name_cn: "萨姆·奥尔特曼"
+    tier: "singularity"
+    company_id: "OPENAI"
+    role: "CEO"
+    description: "OpenAI 创始人，AGI 之路的引领者"
+
+# 说明：
+# tier: singularity（奇点人物）| quasi（准奇点人物）
+# company_id: 对应 company.yaml 中的公司 ID
+# role: CEO | CTO | 创始人 | 董事长 等
