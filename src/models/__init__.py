@@ -1,11 +1,11 @@
 """数据模型定义"""
 
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from typing import Optional, List
 from enum import Enum
 from uuid import uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class SourceType(str, Enum):
@@ -33,6 +33,20 @@ class Article(BaseModel):
     tags: List[str] = Field(default_factory=list)
     entities: List[str] = Field(default_factory=list)
     legend: Optional[str] = None  # 传奇人物 ID（如 musk, huang, altman）
+
+    @field_validator('timestamp')
+    @classmethod
+    def ensure_beijing_time(cls, v: datetime) -> datetime:
+        """统一转换为北京时间
+
+        - 如果时间戳无时区信息，假设为 UTC（Unix 时间戳解析结果）
+        - 转换为北京时间 (UTC+8) 后返回
+        """
+        if v.tzinfo is None:
+            # 假设是 Unix 时间戳解析出来的 naive datetime，补上 UTC 时区
+            v = v.replace(tzinfo=timezone.utc)
+        # 转为北京时间 (UTC+8)
+        return v.astimezone(timezone(timedelta(hours=8)))
 
     class Config:
         use_enum_values = True

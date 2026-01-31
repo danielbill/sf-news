@@ -12,10 +12,17 @@ from jinja2 import Template
 
 
 def format_time(iso_string: str) -> str:
-    """格式化时间为 MM-DD HH:MM"""
+    """格式化时间为 MM-DD HH:MM
+
+    支持带时区和不带时区的 ISO 格式字符串
+    """
     if not iso_string:
         return ""
     try:
+        # 移除时区后缀中的冒号（Python 3.7-3.10 兼容性）
+        # 2026-01-31T15:00:00+08:00 -> 2026-01-31T15:00:00+0800
+        if "+" in iso_string and ":" == iso_string[-3:]:
+            iso_string = iso_string[:-3] + iso_string[-2:]
         dt = datetime.fromisoformat(iso_string)
         return dt.strftime("%m-%d %H:%M")
     except (ValueError, TypeError):

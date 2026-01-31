@@ -17,7 +17,9 @@
       "Bash(findstr:*)",
       "Bash(ls:*)",
       "Bash(pytest:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(gh workflow run:*)",
+      "Bash(gh run list:*)"
     ]
   }
 }
