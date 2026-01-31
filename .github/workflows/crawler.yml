@@ -30,10 +30,10 @@ jobs:
           pip install -e .
 
       - name: 运行爬虫
-        run: python src/crawl_cli.py
+        run: python -m src.crawl_cli
 
       - name: 生成静态页面
-        run: python src/generate_static.py
+        run: python -m src.generate_static
 
       - name: 提交并推送
         run: |
