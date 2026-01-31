@@ -1,0 +1,44 @@
+name: 新闻爬虫
+
+on:
+  schedule:
+    # 早上7点到晚上10点，每小时（北京时间 UTC+8）
+    # GitHub Actions 使用 UTC，所以 7:00 CST = 23:00 UTC (前一天)
+    - cron: '0 23,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14 * * *'
+
+  # 允许手动触发
+  workflow_dispatch:
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # 允许推送到仓库
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖
+        run: |
+          pip install -e .
+
+      - name: 运行爬虫
+        run: python src/crawl_cli.py
+
+      - name: 生成静态页面
+        run: python src/generate_static.py
+
+      - name: 提交并推送
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add data/ docs/
+          git diff --staged --quiet || git commit -m "📰 自动抓取新闻 [skip ci]"
+          git push

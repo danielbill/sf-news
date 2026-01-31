@@ -287,7 +287,7 @@ body {
     pointer-events: none;
     z-index: 0;
     transition: opacity 0.3s ease;
-    background-image: url('/static/images/people/马斯克-1.png');
+    background-image: url('/static/images/people/musk.png');
 }
 
 .timeline-card[data-legend="none"]::before {
