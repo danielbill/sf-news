@@ -5,7 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from datetime import date
+from datetime import datetime, timedelta, timezone, date
 from pathlib import Path
 
 from .storage import TimelineDB
@@ -99,11 +99,53 @@ async def health():
     return {"status": "healthy"}
 
 
-@app.get("/api/articles")
-async def list_articles(limit: int = 100, offset: int = 0):
-    """获取文章列表"""
+@app.get("/api/articles/today")
+async def list_articles_today(limit: int = 100, legend: str = None):
+    """获取今日及以后的新闻"""
+    # 使用北京时间（UTC+8）获取今日日期
+    beijing_tz = timezone(timedelta(hours=8))
+    today = datetime.now(beijing_tz).date().isoformat()
     db = TimelineDB()
-    articles = db.list_articles(limit=limit, offset=offset)
+    articles = db.list_articles(limit=limit, legend=legend, start_date=today)
+    return {
+        "code": 200,
+        "message": "success",
+        "data": articles,
+        "total": len(articles)
+    }
+
+
+@app.get("/api/articles/latest")
+async def list_articles_latest(limit: int = 100, legend: str = None):
+    """获取最新新闻（不限日期）"""
+    db = TimelineDB()
+    articles = db.list_articles_latest(limit=limit, legend=legend)
+    return {
+        "code": 200,
+        "message": "success",
+        "data": articles,
+        "total": len(articles)
+    }
+
+
+@app.get("/api/articles")
+async def list_articles(limit: int = 100, years: int = 1, legend: str = None,
+                       start_date: str = None, end_date: str = None):
+    """获取文章列表（高级查询）
+
+    Args:
+        limit: 返回条数
+        years: 查询最近几年（默认 1 年）
+        legend: 筛选传奇人物
+        start_date: 开始日期 YYYY-MM-DD（可选）
+        end_date: 结束日期 YYYY-MM-DD（可选）
+    """
+    if years == 1:
+        db = TimelineDB()
+        articles = db.list_articles(limit=limit, legend=legend, start_date=start_date, end_date=end_date)
+    else:
+        articles = TimelineDB.list_articles_multi_year(years=years, limit=limit, legend=legend,
+                                                         start_date=start_date, end_date=end_date)
     return {
         "code": 200,
         "message": "success",

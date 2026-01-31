@@ -1,6 +1,6 @@
 """存储模块"""
 
-from datetime import date
+from datetime import date, datetime, timezone, timedelta
 from pathlib import Path
 from typing import Optional, List
 import sqlite3
@@ -10,11 +10,12 @@ from ..models import Article
 
 
 class TimelineDB:
-    """Timeline 数据库管理（一天一个 DB）"""
+    """Timeline 数据库管理（一年一个 DB）"""
 
     def __init__(self, db_date: Optional[date] = None):
         self.db_date = db_date or date.today()
-        self.db_path = Path(f"data/db/timeline_{self.db_date.strftime('%Y-%m-%d')}.sqlite")
+        # 按年分库：timeline_2025.sqlite
+        self.db_path = Path(f"data/db/timeline_{self.db_date.strftime('%Y')}.sqlite")
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
 
     @contextmanager
@@ -58,7 +59,7 @@ class TimelineDB:
                         tags TEXT,
                         entities TEXT,
                         legend TEXT,
-                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                        created_at DATETIME DEFAULT (datetime('now', 'localtime'))
                     )
                 """)
                 print("[DB] 已创建新表")
@@ -82,6 +83,10 @@ class TimelineDB:
         """插入文章"""
         import json
 
+        # 获取北京时间
+        beijing_tz = timezone(timedelta(hours=8))
+        created_at = datetime.now(beijing_tz).isoformat()
+
         # 处理 source - 可能是枚举或字符串
         source_value = article.source
         if hasattr(article.source, 'value'):
@@ -99,8 +104,8 @@ class TimelineDB:
         with self.get_connection() as conn:
             conn.execute("""
                 INSERT OR REPLACE INTO articles
-                (id, title, url, source, timestamp, file_path, tags, entities, legend)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (id, title, url, source, timestamp, file_path, tags, entities, legend, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 article.id,
                 article.title,
@@ -110,7 +115,8 @@ class TimelineDB:
                 article.file_path,
                 json.dumps(article.tags) if article.tags else None,
                 json.dumps(article.entities) if article.entities else None,
-                article.legend
+                article.legend,
+                created_at
             ))
             conn.commit()
 
@@ -124,15 +130,145 @@ class TimelineDB:
             row = cursor.fetchone()
             return dict(row) if row else None
 
-    def list_articles(self, limit: int = 100, offset: int = 0) -> List[dict]:
-        """列出文章"""
+    def list_articles(self, limit: int = 100, offset: int = 0, legend: str = None,
+                      start_date: str = None, end_date: str = None) -> List[dict]:
+        """列出文章
+
+        Args:
+            limit: 返回条数
+            offset: 偏移量
+            legend: 筛选传奇人物（可选）
+            start_date: 开始日期 YYYY-MM-DD（可选）
+            end_date: 结束日期 YYYY-MM-DD（可选）
+        """
         with self.get_connection() as conn:
-            cursor = conn.execute("""
-                SELECT * FROM articles
-                ORDER BY timestamp DESC
-                LIMIT ? OFFSET ?
-            """, (limit, offset))
+            # 构建 WHERE 条件
+            where_conditions = []
+            params = []
+
+            if start_date:
+                where_conditions.append("date(timestamp) >= date(?)")
+                params.append(start_date)
+
+            if end_date:
+                where_conditions.append("date(timestamp) <= date(?)")
+                params.append(end_date)
+
+            if legend:
+                where_conditions.append("legend = ?")
+                params.append(legend)
+
+            # 如果没有条件，返回所有
+            if where_conditions:
+                where_sql = " AND ".join(where_conditions)
+                params.extend([limit, offset])
+                sql = f"""
+                    SELECT * FROM articles
+                    WHERE {where_sql}
+                    ORDER BY timestamp DESC
+                    LIMIT ? OFFSET ?
+                """
+            else:
+                sql = """
+                    SELECT * FROM articles
+                    ORDER BY timestamp DESC
+                    LIMIT ? OFFSET ?
+                """
+                params = [limit, offset]
+
+            cursor = conn.execute(sql, params)
             return [dict(row) for row in cursor.fetchall()]
+
+    def list_articles_latest(self, limit: int = 100, legend: str = None) -> List[dict]:
+        """获取最新新闻（不限日期）
+
+        Args:
+            limit: 返回条数
+            legend: 筛选传奇人物（可选）
+        """
+        with self.get_connection() as conn:
+            if legend:
+                cursor = conn.execute("""
+                    SELECT * FROM articles
+                    WHERE legend = ?
+                    ORDER BY timestamp DESC
+                    LIMIT ?
+                """, (legend, limit))
+            else:
+                cursor = conn.execute("""
+                    SELECT * FROM articles
+                    ORDER BY timestamp DESC
+                    LIMIT ?
+                """, (limit,))
+            return [dict(row) for row in cursor.fetchall()]
+
+    @staticmethod
+    def list_articles_multi_year(years: int = 2, limit: int = 100, legend: str = None,
+                                start_date: str = None, end_date: str = None) -> List[dict]:
+        """列出多年文章（跨库查询）
+
+        Args:
+            years: 查询最近几年
+            limit: 总共返回多少条
+            legend: 筛选传奇人物（可选）
+            start_date: 开始日期 YYYY-MM-DD（可选，默认今日）
+            end_date: 结束日期 YYYY-MM-DD（可选）
+
+        Returns:
+            文章列表，按时间倒序
+        """
+        from datetime import date
+
+        all_articles = []
+        db_dir = Path("data/db")
+
+        # 默认查询今日及以后
+        if not start_date:
+            start_date = date.today().isoformat()
+
+        # 收集要查询的年份
+        current_year = date.today().year
+        query_years = []
+        for i in range(years):
+            year = current_year - i
+            db_path = db_dir / f"timeline_{year}.sqlite"
+            if db_path.exists():
+                query_years.append(year)
+
+        # 构建 WHERE 条件
+        where_conditions = ["date(timestamp) >= date(?)"]
+        params = [start_date]
+
+        if end_date:
+            where_conditions.append("date(timestamp) <= date(?)")
+            params.append(end_date)
+
+        if legend:
+            where_conditions.append("legend = ?")
+            params.append(legend)
+
+        params.append(limit * 2)
+
+        where_sql = " AND ".join(where_conditions)
+        sql = f"""
+            SELECT * FROM articles
+            WHERE {where_sql}
+            ORDER BY timestamp DESC
+            LIMIT ?
+        """
+
+        # 从每个数据库读取
+        for year in query_years:
+            temp_date = date(year, 1, 1)
+            db = TimelineDB(temp_date)
+            with db.get_connection() as conn:
+                cursor = conn.execute(sql, params)
+                articles = [dict(row) for row in cursor.fetchall()]
+                all_articles.extend(articles)
+
+        # 按时间排序并限制数量
+        all_articles.sort(key=lambda x: x['timestamp'], reverse=True)
+        return all_articles[:limit]
 
     def article_exists(self, url: str) -> bool:
         """检查文章是否已存在"""
