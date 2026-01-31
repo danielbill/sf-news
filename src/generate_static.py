@@ -23,9 +23,9 @@ def format_time(iso_string: str) -> str:
 
 
 def copy_static_files():
-    """复制 static/images 到 docs/site/static/images（增量复制）"""
+    """复制 static/images 到 docs/static/images（增量复制）"""
     src = Path("static/images")
-    dst = Path("docs/site/static/images")
+    dst = Path("docs/static/images")
 
     if not src.exists():
         print(f"[Warning] static/images 目录不存在: {src}")
@@ -91,8 +91,8 @@ def generate_static_html():
         date=date.today().isoformat()
     )
 
-    # 4. 写入 docs/site/ 目录（GitHub Pages 发布源）
-    output_path = Path("docs/site/index.html")
+    # 4. 写入 docs/ 目录（GitHub Pages 发布源）
+    output_path = Path("docs/index.html")
     output_path.parent.mkdir(exist_ok=True)
     output_path.write_text(html, encoding="utf-8")
 
