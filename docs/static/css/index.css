@@ -271,7 +271,7 @@ body {
     overflow: hidden;
 }
 
-/* 动态背景图 - 根据第一条新闻的 legend 切换 */
+/* 动态背景图 - 使用 CSS 变量，JS 根据 legend 动态设置 */
 .timeline-card::before {
     content: '';
     position: absolute;
@@ -286,12 +286,8 @@ body {
     opacity: 0.15;
     pointer-events: none;
     z-index: 0;
-    transition: opacity 0.3s ease;
-    background-image: url('/static/images/people/musk.png');
-}
-
-.timeline-card[data-legend="none"]::before {
-    display: none;
+    transition: opacity 0.2s ease;
+    background-image: var(--legend-bg, url('/static/images/legend/musk.png'));
 }
 
 .timeline-card > * {
