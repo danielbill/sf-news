@@ -35,8 +35,8 @@ env/
 
 # Project Specific
 #data/
-*.sqlite
-*.db
+# *.sqlite
+# *.db
 .env
 .env.local
 .claude
