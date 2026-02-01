@@ -65,17 +65,6 @@ companies:
     description: "人工智能研究实验室，ChatGPT、GPT-4 开发者"
     keywords: ["ChatGPT", "GPT-4", "AGI", "大语言模型"]
 
-# 公司关系
-relations:
-  - from_id: "TSLA"
-    to_id: "NVDA"
-    type: "partner"
-    description: "AI 合作伙伴，特斯拉使用 NVIDIA GPU 训练 FSD"
-
-  - from_id: "SPACEX"
-    to_id: "STARLINK"
-    type: "subsidiary"
-    description: "星链是 SpaceX 的卫星互联网项目"
 
 # 说明：
 # tier: 1（奇点公司/一级供应商）| 2（二级供应商）| 3（三级）

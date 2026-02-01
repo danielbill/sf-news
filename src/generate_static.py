@@ -60,15 +60,17 @@ def copy_static_files():
 def generate_static_html():
     """生成静态 HTML 页面（仅当日新闻）"""
 
-    # 1. 读取今日数据库
-    db_path = Path(f"data/db/timeline_{date.today().strftime('%Y-%m-%d')}.sqlite")
+    # 1. 读取今日数据库（按年分库）
+    db_path = Path(f"data/db/timeline_{date.today().strftime('%Y')}.sqlite")
 
     articles = []
     if db_path.exists():
         conn = sqlite3.connect(str(db_path))
         conn.row_factory = sqlite3.Row
+        # 只读取今日新闻
         cursor = conn.execute(
-            "SELECT * FROM articles ORDER BY timestamp DESC LIMIT 100"
+            "SELECT * FROM articles WHERE date(timestamp) = date(?) ORDER BY timestamp DESC LIMIT 100",
+            (date.today().isoformat(),)
         )
         articles = [dict(row) for row in cursor.fetchall()]
         conn.close()

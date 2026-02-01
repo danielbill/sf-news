@@ -12,6 +12,7 @@ from .storage import TimelineDB
 from .api.crawl import router as crawl_router
 from .api.admin import router as admin_router
 from .scheduler import SchedulerManager
+from .crawlers.dedup import today_news_cache
 
 
 @asynccontextmanager
@@ -20,6 +21,9 @@ async def lifespan(app: FastAPI):
     # 初始化今日数据库
     db = TimelineDB(date.today())
     db.init_db()
+
+    # 从数据库加载缓存（防止重启后重复抓取）
+    today_news_cache.init_from_db(db, limit=100)
 
     # 初始化并启动调度器
     scheduler = SchedulerManager(config_dir="config")

@@ -83,11 +83,26 @@ class TodayNewsCache:
         self._check_and_reset()
         return len(self._news)
 
+    def init_from_db(self, db, limit: int = 100):
+        """从数据库初始化缓存（服务启动时调用）
+
+        加载最新 N 条到缓存，确保重启后去重仍有效
+
+        Args:
+            db: TimelineDB 实例
+            limit: 加载条数，默认 100
+        """
+        articles = db.list_articles_latest(limit=limit)
+
+        for article in articles:
+            self._news[article['url']] = article['title']
+
+        print(f"[TodayNewsCache] 从数据库加载了 {len(articles)} 条到缓存")
+
     @property
     def cache_date(self) -> date:
         """获取缓存对应的日期"""
         return self._cache_date
-
 
 # 全局单例
 today_news_cache = TodayNewsCache()

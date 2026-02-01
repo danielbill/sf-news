@@ -15,11 +15,11 @@ sources:
     enabled: true
     url: "https://cache.thepaper.cn/contentapi/wwwIndex/rightSidebar"
 
-  - id: "ifeng"
-    name: "凤凰网"
-    type: "portal"
-    enabled: true
-    url: "https://www.ifeng.com/"
+  # - id: "ifeng"
+  #   name: "凤凰网"
+  #   type: "portal"
+  #   enabled: true
+  #   url: "https://www.ifeng.com/"
 
   - id: "toutiao"
     name: "今日头条"

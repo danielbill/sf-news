@@ -22,7 +22,12 @@
       "Bash(gh run list:*)",
       "Bash(git checkout:*)",
       "Bash(git merge:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(d:/workspace/cybcortex/.venv/Scripts/python.exe:*)",
+      "Bash(gh search repos:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh api:*)",
+      "Bash(gh search code:*)"
     ]
   }
 }

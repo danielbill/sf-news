@@ -505,7 +505,6 @@
                     <div class="timeline-dot"></div>
                     <div class="timeline-meta">
                         <span class="timeline-source news-source">{{ article.source }}</span>
-                        <span class="timeline-separator news-separator">│</span>
                         <span class="timeline-time news-time">{{ article.formatted_time }}</span>
                         {% if article.legend %}
                         <span class="timeline-tag news-tag">{{ article.legend }}</span>
@@ -522,7 +521,7 @@
             {% else %}
                 <div class="empty-state">
                     <div class="empty-state-icon">📭</div>
-                    <div>暂无奇点人物相关新闻</div>
+                    <div></div>
                 </div>
             {% endif %}
         </article>
@@ -537,14 +536,13 @@
                         <p class="trending-summary news-summary">{{ article.summary or article.title }}</p>
                         <div class="trending-meta">
                             <span class="trending-source news-source">{{ article.source }}</span>
-                            <span class="trending-separator news-separator">│</span>
                             <span class="trending-time news-time">{{ article.formatted_time }}</span>
                         </div>
                     </article>
                     {% endfor %}
                 {% else %}
                     <div class="empty-state">
-                        <div>暂无前沿资讯</div>
+                        <div></div>
                     </div>
                 {% endif %}
             </div>
