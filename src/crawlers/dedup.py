@@ -162,14 +162,14 @@ class TextDeduplicator:
         """时间排重：只保留目标日期及之后的文章（财经新闻会提前发次日新闻）"""
         result = []
         for a in articles:
-            # 获取文章日期（timestamp 已经是北京时间，直接取 date 即可）
-            article_date = a.timestamp.date()
+            # 获取文章日期（publish_time 已经是北京时间，直接取 date 即可）
+            article_date = a.publish_time.date()
             # 大于等于目标日期都保留（财经新闻会提前发次日新闻）
             match = article_date >= self.target_date
             if match:
                 result.append(a)
             else:
-                print(f"[Dedup] 时间过滤: {a.title[:30]}... | timestamp={a.timestamp}, target={self.target_date}")
+                print(f"[Dedup] 时间过滤: {a.title[:30]}... | publish_time={a.publish_time}, target={self.target_date}")
         return result
 
     def _filter_by_url(self, articles: List[Article]) -> List[Article]:

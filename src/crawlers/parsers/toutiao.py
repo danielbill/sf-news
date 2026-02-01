@@ -47,11 +47,15 @@ async def parse(response: Response, source_config: Dict[str, Any], client: Async
             if not cluster_id or not title:
                 continue
 
+            # 今日头条没有提供发布时间字段，跳过（不允许使用 datetime.now()）
+            # 如果需要今日头条，需要去详情页抓取时间
+            continue
+
             article = Article(
                 title=title,
                 url=f"https://www.toutiao.com/trending/{cluster_id}/",
                 source=SourceType.TOUTIAO,
-                timestamp=datetime.now()
+                publish_time=datetime.now()  # 占位，实际会被 continue 跳过
             )
             articles.append(article)
 

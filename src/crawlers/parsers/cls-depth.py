@@ -46,12 +46,14 @@ async def parse(response: Response, source_config: Dict[str, Any], client: Async
             if not item_id or not title:
                 continue
 
-            timestamp = datetime.now()
-            if ctime:
-                try:
-                    timestamp = datetime.fromtimestamp(int(ctime))
-                except (ValueError, TypeError):
-                    pass
+            # 必须有发布时间才添加
+            if not ctime:
+                continue
+
+            try:
+                publish_time = datetime.fromtimestamp(int(ctime))
+            except (ValueError, TypeError):
+                continue  # 时间解析失败，跳过
 
             url = share_url or f"https://www.cls.cn/detail/{item_id}"
 
@@ -59,7 +61,7 @@ async def parse(response: Response, source_config: Dict[str, Any], client: Async
                 title=title,
                 url=url,
                 source=SourceType.CLS_DEPTH,
-                timestamp=timestamp
+                publish_time=publish_time
             )
             articles.append(article)
 

@@ -45,19 +45,20 @@ async def parse(response: Response, source_config: Dict[str, Any], client: Async
             if not cont_id or not title:
                 continue
 
-            # 解析时间戳（毫秒）
-            timestamp = datetime.now()
-            if pub_time_long:
-                try:
-                    timestamp = datetime.fromtimestamp(int(pub_time_long) / 1000)
-                except (ValueError, TypeError):
-                    pass
+            # 解析时间戳（毫秒）- 必须有发布时间才添加
+            if not pub_time_long:
+                continue  # 跳过没有发布时间的新闻
+
+            try:
+                publish_time = datetime.fromtimestamp(int(pub_time_long) / 1000)
+            except (ValueError, TypeError):
+                continue  # 时间解析失败，跳过
 
             article = Article(
                 title=title,
                 url=f"https://www.thepaper.cn/newsDetail_forward_{cont_id}",
                 source=SourceType.THEPAPER,
-                timestamp=timestamp
+                publish_time=publish_time
             )
             articles.append(article)
 

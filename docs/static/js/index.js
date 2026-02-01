@@ -66,12 +66,14 @@ function renderTags(tags) {
 
 // ========== 渲染时间线项（左侧，有 legend） ==========
 function renderTimelineItem(article) {
-    const timeStr = formatTime(article.timestamp);
+    // 兼容 publish_time 和 timestamp
+    const timeValue = article.publish_time || article.timestamp;
+    const timeStr = formatTime(timeValue);
     const sourceName = getSourceName(article.source);
     const tagsHtml = renderTags(article.tags);
     // legend 标签
     const legendTag = article.legend
-        ? `<span class="timeline-separator news-separator">│</span><span class="timeline-tag news-tag">${article.legend}</span>`
+        ? `<span class="timeline-tag news-tag">${article.legend}</span>`
         : '';
 
     return `
@@ -79,7 +81,6 @@ function renderTimelineItem(article) {
             <div class="timeline-dot"></div>
             <div class="timeline-meta">
                 <span class="timeline-source news-source">${sourceName}</span>
-                <span class="timeline-separator news-separator">│</span>
                 <span class="timeline-time news-time">${timeStr}</span>
                 ${legendTag}
                 ${tagsHtml}
@@ -92,7 +93,9 @@ function renderTimelineItem(article) {
 
 // ========== 渲染热门卡片（右侧，无 legend） ==========
 function renderTrendingCard(article) {
-    const timeStr = formatTime(article.timestamp);
+    // 兼容 publish_time 和 timestamp
+    const timeValue = article.publish_time || article.timestamp;
+    const timeStr = formatTime(timeValue);
     const sourceName = getSourceName(article.source);
 
     return `
@@ -101,7 +104,6 @@ function renderTrendingCard(article) {
             <p class="trending-summary news-summary">${article.summary || article.title}</p>
             <div class="trending-meta">
                 <span class="trending-source news-source">${sourceName}</span>
-                <span class="trending-separator news-separator">│</span>
                 <span class="trending-time news-time">${timeStr}</span>
             </div>
         </article>
@@ -147,7 +149,7 @@ async function loadNews() {
                 timelineCard.innerHTML = `
                     <div style="text-align: center; padding: 40px; color: var(--maya-meta);">
                         <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
-                        <div>暂无奇点人物相关新闻</div>
+                        <div></div>
                     </div>
                 `;
                 timelineCard.style.setProperty('--legend-bg', 'none');
@@ -159,7 +161,7 @@ async function loadNews() {
             } else {
                 trendingList.innerHTML = `
                     <div style="text-align: center; padding: 40px; color: var(--maya-meta);">
-                        <div>暂无前沿资讯</div>
+                        <div></div>
                     </div>
                 `;
             }

@@ -22,12 +22,16 @@ class SourceType(str, Enum):
 
 
 class Article(BaseModel):
-    """文章数据模型"""
+    """文章数据模型
+
+    注意：publish_time 是源数据，必须从新闻源获取，不允许使用当前时间替代！
+    如果新闻源没有提供发布时间，应该跳过该新闻，而不是用 datetime.now() 填充。
+    """
     id: str = Field(default_factory=lambda: str(uuid4()))
     title: str
     url: str
     source: SourceType
-    timestamp: datetime
+    publish_time: datetime = Field(..., description="新闻发布时间（源数据，不允许篡改）")
     content: Optional[str] = None
     file_path: Optional[str] = None
     tags: List[str] = Field(default_factory=list)

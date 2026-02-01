@@ -39,22 +39,27 @@ class TimelineDB:
             table_exists = cursor.fetchone() is not None
 
             if table_exists:
-                # 检查是否有 legend 列
+                # 检查列名，进行迁移
                 cursor = conn.execute("PRAGMA table_info(articles)")
                 columns = {row["name"] for row in cursor.fetchall()}
+
+                # 迁移：添加 legend 列
                 if "legend" not in columns:
-                    # 添加 legend 列（迁移旧数据库）
                     conn.execute("ALTER TABLE articles ADD COLUMN legend TEXT")
                     print("[DB] 已添加 legend 列到现有表")
+
+                # 迁移：timestamp -> publish_time
+                if "timestamp" in columns and "publish_time" not in columns:
+                    self._migrate_timestamp_to_publish_time(conn)
             else:
-                # 创建新表
+                # 创建新表（使用 publish_time）
                 conn.execute("""
                     CREATE TABLE articles (
                         id TEXT PRIMARY KEY,
                         title TEXT NOT NULL,
                         url TEXT UNIQUE,
                         source TEXT NOT NULL,
-                        timestamp DATETIME NOT NULL,
+                        publish_time DATETIME NOT NULL,
                         file_path TEXT,
                         tags TEXT,
                         entities TEXT,
@@ -64,11 +69,16 @@ class TimelineDB:
                 """)
                 print("[DB] 已创建新表")
 
-            # 创建索引
-            conn.execute("""
-                CREATE INDEX IF NOT EXISTS idx_articles_timestamp
-                ON articles(timestamp)
-            """)
+            # 创建索引（兼容旧列名和新列名）
+            for column in ["publish_time", "timestamp"]:
+                try:
+                    conn.execute(f"""
+                        CREATE INDEX IF NOT EXISTS idx_articles_{column}
+                        ON articles({column})
+                    """)
+                except sqlite3.OperationalError:
+                    pass  # 列不存在，跳过
+
             conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_articles_source
                 ON articles(source)
@@ -78,6 +88,44 @@ class TimelineDB:
                 ON articles(legend)
             """)
             conn.commit()
+
+    def _migrate_timestamp_to_publish_time(self, conn) -> None:
+        """迁移 timestamp 列为 publish_time
+
+        SQLite 不支持直接重命名列，需要重建表
+        """
+        print("[DB] 开始迁移 timestamp -> publish_time")
+
+        # 1. 创建新表
+        conn.execute("""
+            CREATE TABLE articles_new (
+                id TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                url TEXT UNIQUE,
+                source TEXT NOT NULL,
+                publish_time DATETIME NOT NULL,
+                file_path TEXT,
+                tags TEXT,
+                entities TEXT,
+                legend TEXT,
+                created_at DATETIME DEFAULT (datetime('now', 'localtime'))
+            )
+        """)
+
+        # 2. 复制数据
+        conn.execute("""
+            INSERT INTO articles_new (id, title, url, source, publish_time, file_path, tags, entities, legend, created_at)
+            SELECT id, title, url, source, timestamp, file_path, tags, entities, legend, created_at
+            FROM articles
+        """)
+
+        # 3. 删除旧表
+        conn.execute("DROP TABLE articles")
+
+        # 4. 重命名新表
+        conn.execute("ALTER TABLE articles_new RENAME TO articles")
+
+        print(f"[DB] 已迁移 {conn.total_changes} 条记录 timestamp -> publish_time")
 
     def insert_article(self, article: Article) -> None:
         """插入文章"""
@@ -94,30 +142,51 @@ class TimelineDB:
         elif isinstance(article.source, str):
             source_value = article.source
 
-        # 处理 timestamp - 可能是 datetime 或 date
-        timestamp_value = article.timestamp
-        if hasattr(timestamp_value, 'isoformat'):
-            timestamp_value = timestamp_value.isoformat()
+        # 处理 publish_time - 必须从 article.publish_time 获取
+        publish_time_value = article.publish_time
+        if hasattr(publish_time_value, 'isoformat'):
+            publish_time_value = publish_time_value.isoformat()
         else:
-            timestamp_value = str(timestamp_value)
+            publish_time_value = str(publish_time_value)
 
         with self.get_connection() as conn:
-            conn.execute("""
-                INSERT OR REPLACE INTO articles
-                (id, title, url, source, timestamp, file_path, tags, entities, legend, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                article.id,
-                article.title,
-                article.url,
-                source_value,
-                timestamp_value,
-                article.file_path,
-                json.dumps(article.tags) if article.tags else None,
-                json.dumps(article.entities) if article.entities else None,
-                article.legend,
-                created_at
-            ))
+            # 优先使用 publish_time，回退到 timestamp（兼容旧数据）
+            column_name = "publish_time"
+            try:
+                conn.execute(f"""
+                    INSERT OR REPLACE INTO articles
+                    (id, title, url, source, {column_name}, file_path, tags, entities, legend, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    article.id,
+                    article.title,
+                    article.url,
+                    source_value,
+                    publish_time_value,
+                    article.file_path,
+                    json.dumps(article.tags) if article.tags else None,
+                    json.dumps(article.entities) if article.entities else None,
+                    article.legend,
+                    created_at
+                ))
+            except sqlite3.OperationalError:
+                # 回退到 timestamp（旧数据库）
+                conn.execute("""
+                    INSERT OR REPLACE INTO articles
+                    (id, title, url, source, timestamp, file_path, tags, entities, legend, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    article.id,
+                    article.title,
+                    article.url,
+                    source_value,
+                    publish_time_value,
+                    article.file_path,
+                    json.dumps(article.tags) if article.tags else None,
+                    json.dumps(article.entities) if article.entities else None,
+                    article.legend,
+                    created_at
+                ))
             conn.commit()
 
     def get_article(self, article_id: str) -> Optional[dict]:
@@ -142,16 +211,19 @@ class TimelineDB:
             end_date: 结束日期 YYYY-MM-DD（可选）
         """
         with self.get_connection() as conn:
+            # 检测使用哪个列名
+            time_column = self._get_time_column(conn)
+
             # 构建 WHERE 条件
             where_conditions = []
             params = []
 
             if start_date:
-                where_conditions.append("date(timestamp) >= date(?)")
+                where_conditions.append(f"date({time_column}) >= date(?)")
                 params.append(start_date)
 
             if end_date:
-                where_conditions.append("date(timestamp) <= date(?)")
+                where_conditions.append(f"date({time_column}) <= date(?)")
                 params.append(end_date)
 
             if legend:
@@ -165,19 +237,19 @@ class TimelineDB:
                 sql = f"""
                     SELECT * FROM articles
                     WHERE {where_sql}
-                    ORDER BY timestamp DESC
+                    ORDER BY {time_column} DESC
                     LIMIT ? OFFSET ?
                 """
             else:
-                sql = """
+                sql = f"""
                     SELECT * FROM articles
-                    ORDER BY timestamp DESC
+                    ORDER BY {time_column} DESC
                     LIMIT ? OFFSET ?
                 """
                 params = [limit, offset]
 
             cursor = conn.execute(sql, params)
-            return [dict(row) for row in cursor.fetchall()]
+            return [self._normalize_article(dict(row)) for row in cursor.fetchall()]
 
     def list_articles_latest(self, limit: int = 100, legend: str = None) -> List[dict]:
         """获取最新新闻（不限日期）
@@ -187,20 +259,22 @@ class TimelineDB:
             legend: 筛选传奇人物（可选）
         """
         with self.get_connection() as conn:
+            time_column = self._get_time_column(conn)
+
             if legend:
-                cursor = conn.execute("""
+                cursor = conn.execute(f"""
                     SELECT * FROM articles
                     WHERE legend = ?
-                    ORDER BY timestamp DESC
+                    ORDER BY {time_column} DESC
                     LIMIT ?
                 """, (legend, limit))
             else:
-                cursor = conn.execute("""
+                cursor = conn.execute(f"""
                     SELECT * FROM articles
-                    ORDER BY timestamp DESC
+                    ORDER BY {time_column} DESC
                     LIMIT ?
                 """, (limit,))
-            return [dict(row) for row in cursor.fetchall()]
+            return [self._normalize_article(dict(row)) for row in cursor.fetchall()]
 
     @staticmethod
     def list_articles_multi_year(years: int = 2, limit: int = 100, legend: str = None,
@@ -236,11 +310,11 @@ class TimelineDB:
                 query_years.append(year)
 
         # 构建 WHERE 条件
-        where_conditions = ["date(timestamp) >= date(?)"]
+        where_conditions = [f"date({TimelineDB._detect_time_column_for_db(db_dir / f'timeline_{query_years[0]}.sqlite')}) >= date(?)"]
         params = [start_date]
 
         if end_date:
-            where_conditions.append("date(timestamp) <= date(?)")
+            where_conditions.append(f"date({TimelineDB._detect_time_column_for_db(db_dir / f'timeline_{query_years[0]}.sqlite')}) <= date(?)")
             params.append(end_date)
 
         if legend:
@@ -253,7 +327,7 @@ class TimelineDB:
         sql = f"""
             SELECT * FROM articles
             WHERE {where_sql}
-            ORDER BY timestamp DESC
+            ORDER BY {TimelineDB._detect_time_column_for_db(db_dir / f'timeline_{query_years[0]}.sqlite')} DESC
             LIMIT ?
         """
 
@@ -267,7 +341,11 @@ class TimelineDB:
                 all_articles.extend(articles)
 
         # 按时间排序并限制数量
-        all_articles.sort(key=lambda x: x['timestamp'], reverse=True)
+        if all_articles:
+            time_key = 'publish_time' if 'publish_time' in all_articles[0] else 'timestamp'
+        else:
+            time_key = 'timestamp'
+        all_articles.sort(key=lambda x: x[time_key], reverse=True)
         return all_articles[:limit]
 
     def article_exists(self, url: str) -> bool:
@@ -289,3 +367,32 @@ class TimelineDB:
             cursor = conn.execute("DELETE FROM articles")
             conn.commit()
             return cursor.rowcount
+
+    def _get_time_column(self, conn) -> str:
+        """获取时间列名（兼容新旧数据库）"""
+        cursor = conn.execute("PRAGMA table_info(articles)")
+        columns = {row["name"] for row in cursor.fetchall()}
+        return "publish_time" if "publish_time" in columns else "timestamp"
+
+    @staticmethod
+    def _detect_time_column_for_db(db_path: Path) -> str:
+        """检测指定数据库使用的时间列名"""
+        if not db_path.exists():
+            return "timestamp"  # 默认旧列名
+        try:
+            conn = sqlite3.connect(str(db_path))
+            cursor = conn.execute("PRAGMA table_info(articles)")
+            columns = {row["name"] for row in cursor.fetchall()}
+            conn.close()
+            return "publish_time" if "publish_time" in columns else "timestamp"
+        except Exception:
+            return "timestamp"
+
+    def _normalize_article(self, article: dict) -> dict:
+        """标准化文章数据（兼容新旧列名）"""
+        # 同时兼容 publish_time 和 timestamp
+        if "publish_time" not in article and "timestamp" in article:
+            article["publish_time"] = article["timestamp"]
+        elif "timestamp" not in article and "publish_time" in article:
+            article["timestamp"] = article["publish_time"]
+        return article

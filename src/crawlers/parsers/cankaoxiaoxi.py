@@ -45,11 +45,17 @@ async def parse(response: Response, source_config: Dict[str, Any], client: Async
 
             for item in data.get("list", [])[:limit]:
                 article_data = item["data"]
+                publish_time = _parse_timestamp(article_data.get("publishTime"))
+
+                # 必须有发布时间才添加
+                if not publish_time:
+                    continue
+
                 article = Article(
                     title=article_data["title"],
                     url=article_data["url"],
                     source=SourceType.CANKAOXIAOXI,
-                    timestamp=_parse_timestamp(article_data.get("publishTime"))
+                    publish_time=publish_time
                 )
                 articles.append(article)
 
@@ -95,12 +101,16 @@ async def fetch_content(url: str, client: AsyncClient) -> str:
         return f"获取内容失败: {e}"
 
 
-def _parse_timestamp(timestamp_str: str) -> datetime:
-    """解析时间戳"""
+def _parse_timestamp(timestamp_str: str) -> datetime | None:
+    """解析时间戳
+
+    Returns:
+        datetime 对象，如果解析失败返回 None
+    """
     if not timestamp_str:
-        return datetime.now()
+        return None
     # 参考消息时间格式: "2025-01-28 10:00:00"
     try:
         return datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S")
     except ValueError:
-        return datetime.now()
+        return None

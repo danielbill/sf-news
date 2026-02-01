@@ -66,7 +66,9 @@ function renderTags(tags) {
 
 // ========== 渲染时间线项（左侧，有 legend） ==========
 function renderTimelineItem(article) {
-    const timeStr = formatTime(article.timestamp);
+    // 兼容 publish_time 和 timestamp
+    const timeValue = article.publish_time || article.timestamp;
+    const timeStr = formatTime(timeValue);
     const sourceName = getSourceName(article.source);
     const tagsHtml = renderTags(article.tags);
     // legend 标签
@@ -91,7 +93,9 @@ function renderTimelineItem(article) {
 
 // ========== 渲染热门卡片（右侧，无 legend） ==========
 function renderTrendingCard(article) {
-    const timeStr = formatTime(article.timestamp);
+    // 兼容 publish_time 和 timestamp
+    const timeValue = article.publish_time || article.timestamp;
+    const timeStr = formatTime(timeValue);
     const sourceName = getSourceName(article.source);
 
     return `

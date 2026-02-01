@@ -67,9 +67,15 @@ def generate_static_html():
     if db_path.exists():
         conn = sqlite3.connect(str(db_path))
         conn.row_factory = sqlite3.Row
+
+        # 检测使用哪个列名
+        cursor = conn.execute("PRAGMA table_info(articles)")
+        columns = {row["name"] for row in cursor.fetchall()}
+        time_column = "publish_time" if "publish_time" in columns else "timestamp"
+
         # 只读取今日新闻
         cursor = conn.execute(
-            "SELECT * FROM articles WHERE date(timestamp) = date(?) ORDER BY timestamp DESC LIMIT 100",
+            f"SELECT * FROM articles WHERE date({time_column}) = date(?) ORDER BY {time_column} DESC LIMIT 100",
             (date.today().isoformat(),)
         )
         articles = [dict(row) for row in cursor.fetchall()]
@@ -79,7 +85,9 @@ def generate_static_html():
 
     # 2. 按 legend 字段分组，并格式化时间
     for article in articles:
-        article["formatted_time"] = format_time(article.get("timestamp"))
+        # 兼容 publish_time 和 timestamp
+        time_value = article.get("publish_time") or article.get("timestamp")
+        article["formatted_time"] = format_time(time_value)
 
     timeline_articles = [a for a in articles if a.get('legend')]
     trending_articles = [a for a in articles if not a.get('legend')]

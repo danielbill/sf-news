@@ -57,13 +57,17 @@ async def parse(response: Response, source_config: Dict[str, Any], client: Async
                 relative_time = time_el.get_text(strip=True) if time_el else ""
 
                 # 解析相对时间（如 "3小时前"）
-                timestamp = _parse_relative_time(relative_time)
+                publish_time = _parse_relative_time(relative_time)
+
+                # 必须有有效的发布时间才添加
+                if not publish_time:
+                    continue
 
                 article = Article(
                     title=title,
                     url=f"https://www.36kr.com{url_path}",
                     source=SourceType.KR36,
-                    timestamp=timestamp
+                    publish_time=publish_time
                 )
                 articles.append(article)
 
@@ -77,20 +81,19 @@ async def parse(response: Response, source_config: Dict[str, Any], client: Async
     return articles
 
 
-def _parse_relative_time(time_str: str) -> datetime:
+def _parse_relative_time(time_str: str) -> datetime | None:
     """解析相对时间字符串
 
     Args:
         time_str: 相对时间字符串（如 "3小时前"、"30分钟前"）
 
     Returns:
-        datetime 对象
+        datetime 对象，解析失败返回 None
     """
-    now = datetime.now()
-
     if not time_str:
-        return now
+        return None
 
+    now = datetime.now()
     time_str = time_str.strip().lower()
 
     try:
@@ -106,7 +109,7 @@ def _parse_relative_time(time_str: str) -> datetime:
     except (ValueError, AttributeError):
         pass
 
-    return now
+    return None
 
 
 async def fetch_content(url: str, client: AsyncClient) -> str:

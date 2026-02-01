@@ -53,16 +53,20 @@ async def parse(response: Response, source_config: Dict[str, Any], client: Async
                     if not title or not url:
                         continue
 
+                    # 必须有发布时间才添加
+                    if not news_time:
+                        continue
+
                     # 解析时间
-                    timestamp = datetime.now()
-                    if news_time:
-                        timestamp = _parse_time(news_time)
+                    publish_time = _parse_time(news_time)
+                    if not publish_time:
+                        continue  # 时间解析失败，跳过
 
                     article = Article(
                         title=title,
                         url=url,
                         source=SourceType.IFENG,
-                        timestamp=timestamp
+                        publish_time=publish_time
                     )
                     articles.append(article)
 
@@ -75,14 +79,14 @@ async def parse(response: Response, source_config: Dict[str, Any], client: Async
     return articles
 
 
-def _parse_time(time_str: str) -> datetime:
+def _parse_time(time_str: str) -> datetime | None:
     """解析时间字符串
 
     Args:
         time_str: 时间字符串
 
     Returns:
-        datetime 对象
+        datetime 对象，解析失败返回 None
     """
     # 尝试多种格式
     formats = [
@@ -97,7 +101,7 @@ def _parse_time(time_str: str) -> datetime:
         except ValueError:
             continue
 
-    return datetime.now()
+    return None
 
 
 async def fetch_content(url: str, client: AsyncClient) -> str:

@@ -70,7 +70,7 @@ async def run_crawl(source_id: str = None) -> Dict[str, Any]:
             print(f"[Crawl] {source.name}: 抓取 {len(articles)} 条")
             # 打印每篇文章的详细信息
             for art in articles:
-                print(f"  - {art.title[:40]}... | {art.timestamp} | {art.url[:50]}...")
+                print(f"  - {art.title[:40]}... | {art.publish_time} | {art.url[:50]}...")
 
             return {
                 "source": source.name,
@@ -172,8 +172,8 @@ async def run_crawl(source_id: str = None) -> Dict[str, Any]:
 
                     # 生成文件路径: data/articles/YYYY/MM/DD/标题.md
                     article_date = (
-                        article.timestamp.date()
-                        if hasattr(article.timestamp, 'date')
+                        article.publish_time.date()
+                        if hasattr(article.publish_time, 'date')
                         else date.today()
                     )
                     filename = (
@@ -197,7 +197,7 @@ async def run_crawl(source_id: str = None) -> Dict[str, Any]:
                     with open(file_path, 'w', encoding='utf-8') as f:
                         f.write(f"# {article.title}\n\n")
                         f.write(f"> 来源: {article.source}\n")
-                        f.write(f"> 时间: {article.timestamp}\n")
+                        f.write(f"> 时间: {article.publish_time}\n")
                         f.write(f"> URL: {article.url}\n\n")
                         f.write(article.content)
 

@@ -52,18 +52,20 @@ async def parse(response: Response, source_config: Dict[str, Any], client: Async
             if not title or not uri:
                 continue
 
-            timestamp = datetime.now()
-            if display_time:
-                try:
-                    timestamp = datetime.fromtimestamp(int(display_time))
-                except (ValueError, TypeError):
-                    pass
+            # 必须有发布时间才添加
+            if not display_time:
+                continue
+
+            try:
+                publish_time = datetime.fromtimestamp(int(display_time))
+            except (ValueError, TypeError):
+                continue  # 时间解析失败，跳过
 
             article = Article(
                 title=title,
                 url=uri,
                 source=SourceType.WALLSTREETCN_NEWS,
-                timestamp=timestamp
+                publish_time=publish_time
             )
             articles.append(article)
 
