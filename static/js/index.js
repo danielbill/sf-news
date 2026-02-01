@@ -73,7 +73,7 @@ function renderTimelineItem(article) {
     const tagsHtml = renderTags(article.tags);
     // legend 标签
     const legendTag = article.legend
-        ? `<span class="timeline-tag news-tag">${article.legend}</span>`
+        ? `<span class="timeline-tag news-tag" style="margin-left: auto;">${article.legend}</span>`
         : '';
 
     return `
@@ -81,12 +81,12 @@ function renderTimelineItem(article) {
             <div class="timeline-dot"></div>
             <div class="timeline-meta">
                 <span class="timeline-source news-source">${sourceName}</span>
+                <span class="timeline-separator news-separator"> | </span>
                 <span class="timeline-time news-time">${timeStr}</span>
                 ${legendTag}
-                ${tagsHtml}
             </div>
             <h3 class="timeline-title"><a href="${article.url}" target="_blank" style="color: inherit; text-decoration: none;">${article.title}</a></h3>
-            <p class="timeline-summary news-summary">${article.summary || article.title}</p>
+
         </div>
     `;
 }
@@ -100,8 +100,7 @@ function renderTrendingCard(article) {
 
     return `
         <article class="trending-card" onclick="window.open('${article.url}', '_blank')">
-            <h3 class="trending-title">${article.title}</h3>
-            <p class="trending-summary news-summary">${article.summary || article.title}</p>
+            <h3 class="trending-title">${article.title}</h3>          
             <div class="trending-meta">
                 <span class="trending-source news-source">${sourceName}</span>
                 <span class="trending-time news-time">${timeStr}</span>

@@ -316,13 +316,6 @@
             margin-left: auto;
         }
 
-        .news-summary {
-            font-size: 14px;
-            font-weight: 400;
-            color: #94a3b8;
-            line-height: 1.6;
-        }
-
         /* ========== 卡片基础样式 ========== */
         .timeline-card,
         .trending-card {
@@ -464,15 +457,7 @@
             font-size: 17px;
             font-weight: 400;
             color: var(--maya-primary);
-            margin-bottom: 8px;
             line-height: 1.4;
-        }
-
-        .timeline-summary {
-            font-size: 14px;
-            font-weight: 400;
-            color: #94a3b8;
-            line-height: 1.6;
         }
 
         /* ========== 右侧卡片 ========== */
@@ -491,20 +476,8 @@
             font-size: 17px;
             font-weight: 400;
             color: var(--maya-primary);
-            margin-bottom: 8px;
+            margin-bottom: 12px;
             line-height: 1.4;
-        }
-
-        .trending-summary {
-            font-size: 14px;
-            font-weight: 400;
-            color: #94a3b8;
-            line-height: 1.6;
-            margin-bottom: 16px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
         }
 
         .trending-meta {
@@ -662,7 +635,6 @@
                     <span class="timeline-tag news-tag">SpaceX</span>
                 </div>
                 <h3 class="timeline-title">SpaceX 星舰第四次试飞成功，成功实现海面软着陆</h3>
-                <p class="timeline-summary news-summary">在德克萨斯州博卡奇卡发射场，SpaceX 成功完成星舰第四次轨道试飞。超重型助推器和飞船均成功降落在预定区域，标志着人类迈向火星的重要一步。</p>
             </div>
 
             <div class="timeline-item">
@@ -675,7 +647,6 @@
                     <span class="timeline-tag news-tag">Tesla</span>
                 </div>
                 <h3 class="timeline-title">特斯拉FSD v12.5向全美用户推送，端到端神经网络表现惊艳</h3>
-                <p class="timeline-summary news-summary">特斯拉最新全自动驾驶系统开始向全美用户推送。新版本完全采用端到端神经网络，无需人工编写规则代码，在城市道路表现接近人类水平。</p>
             </div>
 
             <div class="timeline-item">
@@ -688,7 +659,6 @@
                     <span class="timeline-tag news-tag">xAI</span>
                 </div>
                 <h3 class="timeline-title">xAI 完成60亿美元融资，估值达240亿美元</h3>
-                <p class="timeline-summary news-summary">马斯克旗下人工智能公司 xAI 宣布完成B轮融资，由红杉资本领投。资金将用于扩充算力基础设施，加速 Grok 模型的研发进程。</p>
             </div>
 
             <div class="timeline-item">
@@ -701,7 +671,6 @@
                     <span class="timeline-tag news-tag">Neuralink</span>
                 </div>
                 <h3 class="timeline-title">Neuralink 获得FDA突破性设备认证</h3>
-                <p class="timeline-summary news-summary">脑机接口公司 Neuralink 宣布其无线脑机接口系统获得FDA突破性设备认定。首例人类植入患者已能通过意念控制电脑鼠标，开启瘫痪患者治疗新纪元。</p>
             </div>
 
             <div class="timeline-item">
@@ -714,7 +683,6 @@
                     <span class="timeline-tag news-tag">Tesla</span>
                 </div>
                 <h3 class="timeline-title">特斯拉新一代Optimus机器人亮相工厂</h3>
-                <p class="timeline-summary news-summary">特斯拉发布人形机器人 Optimus 最新工作视频，展示了在工厂中进行精密操作的能力。机器人已完成自主搬运、零件组装等复杂任务，商业化进程加速。</p>
             </div>
         </article>
 
@@ -723,7 +691,6 @@
             <div class="trending-list">
                 <article class="trending-card">
                     <h3 class="trending-title">OpenAI GPT-5 研发进展顺利，多模态能力大幅提升</h3>
-                    <p class="trending-summary news-summary">据内部人士透露，GPT-5 训练进度超出预期。新模型在视频理解、代码生成和长文本处理方面取得突破性进展。</p>
                     <div class="trending-meta">
                         <span class="trending-source news-source">OpenAI</span>
                         <span class="trending-separator news-separator">│</span>
@@ -735,7 +702,6 @@
 
                 <article class="trending-card">
                     <h3 class="trending-title">NVIDIA 新一代Blackwell架构芯片开始出货，性能提升3倍</h3>
-                    <p class="trending-summary news-summary">英伟达下一代数据中心 GPU Blackwell 已开始向客户发货。新芯片采用台积电4NP工艺，AI算力达到20 petaflops。</p>
                     <div class="trending-meta">
                         <span class="trending-source news-source">NVIDIA</span>
                         <span class="trending-separator news-separator">│</span>
@@ -747,7 +713,6 @@
 
                 <article class="trending-card">
                     <h3 class="trending-title">Stellar 可控核聚变实验首次实现净能量增益持续输出</h3>
-                    <p class="trending-summary news-summary">核聚变初创公司 Stellar 宣布，其反应堆连续10小时输出能量超过输入能量，首次实现商业化级别的稳定运行。</p>
                     <div class="trending-meta">
                         <span class="trending-source news-source">MIT Tech Review</span>
                         <span class="trending-separator news-separator">│</span>
@@ -759,7 +724,6 @@
 
                 <article class="trending-card">
                     <h3 class="trending-title">Boston Dynamics Atlas机器人进入工厂测试，商业化进程加速</h3>
-                    <p class="trending-summary news-summary">现代汽车集团旗下波士顿动力宣布，Atlas 人形机器人已在汽车制造厂开始实地测试，执行搬运和装配任务。</p>
                     <div class="trending-meta">
                         <span class="trending-source news-source">IEEE Spectrum</span>
                         <span class="trending-separator news-separator">│</span>
@@ -771,7 +735,6 @@
 
                 <article class="trending-card">
                     <h3 class="trending-title">QuantumScape 固态电池能量密度突破500Wh/kg，量产在即</h3>
-                    <p class="trending-summary news-summary">固态电池先锋 QuantumScape 宣布其最新一代电池能量密度达到510Wh/kg，循环寿命超过1000次，工厂建设进入最后阶段。</p>
                     <div class="trending-meta">
                         <span class="trending-source news-source">Nature Energy</span>
                         <span class="trending-separator news-separator">│</span>
