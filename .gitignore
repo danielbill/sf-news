@@ -34,12 +34,16 @@ env/
 *~
 
 # Project Specific
+# 数据库文件不应提交到 Git（由本地生成，本地覆盖云端）
 data/
 *.sqlite
 *.db
 .env
 .env.local
 .claude
+
+# 静态页面目录（docs/）由本地生成后推送到 GitHub Pages
+# 本地版本始终覆盖云端，Merge 冲突时使用 --ours 策略
 
 # Logs
 logs/

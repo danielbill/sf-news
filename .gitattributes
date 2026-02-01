@@ -1,0 +1,6 @@
+# 合并策略：静态页面始终使用本地版本（本地覆盖云端）
+docs/index.html merge=ours
+
+# 数据库文件不合并（已在 .gitignore 中，双重保险）
+*.sqlite -merge
+data/db/* -merge
