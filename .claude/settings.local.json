@@ -27,7 +27,13 @@
       "Bash(gh search repos:*)",
       "Bash(gh repo view:*)",
       "Bash(gh api:*)",
-      "Bash(gh search code:*)"
+      "Bash(gh search code:*)",
+      "Bash(git fetch:*)",
+      "Bash(bash .specify/scripts/bash/create-new-feature.sh:*)",
+      "Bash(bash .specify/scripts/bash/check-prerequisites.sh:*)",
+      "Bash(git clone:*)",
+      "Bash(chmod:*)",
+      "Bash(bash .specify/scripts/bash/create-idea.sh:*)"
     ]
   }
 }

@@ -37,7 +37,7 @@ legend:
     # 人物名
     - ["奥尔特曼", "Sam Altman"]
     # OpenAI 相关
-    - ["OpenAI", "ChatGPT", "GPT"]
+    - ["OpenAI", "ChatGPT", "GPT","codex"]
   
   anthropic:
     - ["Anthropic","Dario Amodei","Daniela Amodei","丹妮拉·阿莫迪","达里奥·阿莫迪"]
@@ -90,7 +90,7 @@ front:
   - ["lpu", "Trainium"]
 
   # 国产GPU
-  - ["昇腾", "寒武纪", "摩尔线程", "壁仞", "沐曦", "燧原", "天数智芯", "海光", "芯动科技", "登临科技", "兆芯", "芯瞳", "曦望"]
+  - ["平头哥","昇腾", "寒武纪", "摩尔线程", "壁仞", "沐曦", "燧原",  "海光" ]
 
 
 
