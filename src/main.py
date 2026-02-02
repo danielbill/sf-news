@@ -11,6 +11,7 @@ from pathlib import Path
 from .storage import TimelineDB
 from .api.crawl import router as crawl_router
 from .api.admin import router as admin_router
+from .api.biz import router as biz_router
 from .scheduler import SchedulerManager
 from .crawlers.dedup import today_news_cache
 
@@ -59,6 +60,7 @@ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 # 注册 API 路由
 app.include_router(crawl_router)
 app.include_router(admin_router)
+app.include_router(biz_router)
 
 
 @app.get("/admin", response_class=HTMLResponse)
