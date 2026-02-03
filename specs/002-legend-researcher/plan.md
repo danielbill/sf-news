@@ -16,29 +16,42 @@
 ### 数据流
 
 ```
-config/news_keywords.yaml (权威源头)
-           ↓
-   手动触发同步 (POST /biz/legend_basedata/sync)
-           ↓
-   计算文件哈希，对比上次哈希
-           ↓
-   ┌─────────────┬─────────────┬─────────────┐
-   │   新增      │   移除      │ Keywords变化 │
-   ▼             ▼             ▼
- 创建档案      标记归档      更新关键词配置
-   │             │             │
-   └─────────────┴─────────────┘
-                 │
-          ┌──────┴──────┐
-          ▼             ▼
-  ┌──────────────────┐  ┌──────────────────┐
-  │  LegendDB (SQLite) │  │ Markdown Files   │
-  │  - legends       │  │  - people/{id}.md │
-  │  - legend_keywords│  │  - orgs/{id}.md  │
-  │  - legend_products│  └──────────────────┘
-  │  - legend_XXX    │
-  └──────────────────┘
+config/legend.yaml (奇点实体) + config/nova.yaml (超新星实体)
+                    ↓
+            手动触发同步 (POST /biz/legend_basedata/sync)
+                    ↓
+            计算文件哈希，对比上次哈希
+                    ↓
+            ┌─────────────┬─────────────┬─────────────┐
+            │   新增      │   移除      │ 内容变化     │
+            ▼             ▼             ▼
+        创建档案      标记归档      更新记录
+            │             │             │
+            └─────────────┴─────────────┘
+                          │
+                   ┌──────┴──────┐
+                   ▼             ▼
+           ┌──────────────────┐  ┌──────────────────┐
+           │  LegendDB (SQLite) │  │ Markdown Files   │
+           │  - legends       │  │  - people/{id}.md │
+           │  - legend_keywords│  │  - company/{id}.md│
+           │  - legend_products│  └──────────────────┘
+           │  - legend_XXX    │
+           └──────────────────┘
 ```
+
+**配置文件说明**:
+
+| 文件 | 用途 | 实体类型 |
+|------|------|----------|
+| `config/legend.yaml` | 奇点实体（已验证） | people + company |
+| `config/nova.yaml` | 超新星实体（爆发中） | people + company |
+
+**Keywords 提取规则**:
+- `name_en`: 提取
+- `name_cn`: 提取（如果有）
+- `keywords`: 展平后提取
+- 其他字段: 不提取
 
 **触发方式**: 纯手动触发（管理后台按钮 / API 调用），无定时任务
 
@@ -201,14 +214,14 @@ CREATE INDEX idx_legend_sync_log_synced_at ON legend_sync_log(synced_at);
 
 #### POST /biz/legend_basedata/sync
 
-手动触发同步（扫描 news_keywords.yaml）
+手动触发同步（扫描 legend.yaml 和 nova.yaml）
 
 **触发方式**: 管理后台按钮 / API 调用
 
 **Request Body**:
 ```json
 {
-  "auto_fetch": false     // 是否自动调用 /baidu-ai-search 采集数据
+  "auto_fetch": false     // 是否自动调用 AI 搜索采集数据
 }
 ```
 
@@ -218,10 +231,13 @@ CREATE INDEX idx_legend_sync_log_synced_at ON legend_sync_log(synced_at);
   "code": 200,
   "data": {
     "has_changes": true,
-    "file_hash": "abc123...",
+    "files": {
+      "legend.yaml": "abc123...",
+      "nova.yaml": "def456..."
+    },
     "added": ["openai"],
     "removed": [],
-    "keywords_updated": ["anthropic"],
+    "updated": ["anthropic"],
     "unchanged": 7,
     "synced_at": "2026-02-02T10:30:00"
   }
@@ -317,11 +333,13 @@ class LegendSyncService:
 
     def __init__(
         self,
-        keywords_path: str = "config/news_keywords.yaml",
+        legend_path: str = "config/legend.yaml",
+        nova_path: str = "config/nova.yaml",
         db: LegendDB = None,
         file_service: LegendFileService = None
     ):
-        self.keywords_path = Path(keywords_path)
+        self.legend_path = Path(legend_path)
+        self.nova_path = Path(nova_path)
         self.db = db or LegendDB()
         self.file_service = file_service or LegendFileService()
 
@@ -329,30 +347,37 @@ class LegendSyncService:
         """执行同步
 
         流程:
-        1. 读取 news_keywords.yaml
+        1. 读取 legend.yaml 和 nova.yaml
         2. 计算哈希值，检测变化
         3. 对比现有数据库
         4. 识别新增/移除/变化的 Legend
-        5. 执行相应操作
-        6. 如果 auto_fetch=True，触发数据采集
+        5. 提取所有 keywords (name_en + name_cn + keywords 展平)
+        6. 执行相应操作
+        7. 如果 auto_fetch=True，触发数据采集
         """
         ...
 
-    def _detect_new_legends(self, yaml_legends: dict, existing: set) -> List[str]
-    def _detect_removed_legends(self, yaml_legends: dict, existing: set) -> List[str]
-    def _detect_keyword_changes(self, legend_id: str, keywords: list) -> bool
-    def _create_legend_from_yaml(self, legend_id: str, keywords: list, legend_type: str) -> None
-    def _remove_legend(self, legend_id: str) -> None
-    def _update_keywords(self, legend_id: str, keywords: list) -> None
-
-    def _infer_legend_type(self, legend_id: str, keywords: list) -> str:
-        """推断 Legend 类型 (PERSON | ORGANIZATION)
+    def _extract_keywords(self, config: dict) -> Dict[str, List[str]]:
+        """从配置中提取所有 keywords
 
         规则:
-        - 如果关键词包含 "创始人"、"CEO" 等职位词 → PERSON
-        - 如果关键词包含公司典型词汇 → ORGANIZATION
-        - 默认 ORGANIZATION
+        - name_en: 提取
+        - name_cn: 提取（如果有）
+        - keywords: 展平后提取
+        - 其他字段: 不提取
+
+        返回: {legend_id: [keyword1, keyword2, ...]}
         """
+        ...
+
+    def _detect_legend_type(self, branch: str) -> str:
+        """根据所在分支确定 Legend 类型
+
+        规则:
+        - people 分支 → PERSON
+        - company 分支 → ORGANIZATION
+        """
+        ...
 ```
 
 ---
@@ -441,10 +466,11 @@ class LegendSyncService:
 | api/biz/legend_basedata.py | fastapi, services.* |
 
 **外部依赖**:
-- `config/news_keywords.yaml` - 数据源（手动触发）
+- `config/legend.yaml` - 奇点实体配置（手动维护）
+- `config/nova.yaml` - 超新星实体配置（手动维护）
 - `design/legend/legend_person_template.md` - 人物模板
 - `design/legend/legend_org_template.md` - 组织模板
-- `/baidu-ai-search` skill - 数据采集（可选）
+- 智谱 AI 搜索（`https://open.bigmodel.cn/api/paas/v4/`） - 数据采集
 
 ---
 
@@ -452,8 +478,8 @@ class LegendSyncService:
 
 | 风险 | 影响 | 缓解措施 |
 |------|------|----------|
-| news_keywords.yaml 格式变化 | 同步失败 | 添加格式验证和错误日志 |
-| Legend 类型推断错误 | 档案分类错误 | 提供手动修正 API |
+| 配置文件格式变化 | 同步失败 | 添加格式验证和错误日志 |
+| Legend 类型推断错误 | 档案分类错误 | 由配置文件分支决定，无需推断 |
 | Markdown 文件冲突 | 数据覆盖 | 添加版本控制/备份 |
 | SQLite 并发冲突 | 数据损坏 | 使用 WAL 模式 |
 
@@ -470,8 +496,9 @@ class LegendSyncService:
 
 ## 9. Success Criteria
 
-- [ ] 能够从 `news_keywords.yaml` 正确解析 Legend 定义
-- [ ] 能够检测并处理新增/移除/keywords 变化
+- [ ] 能够正确解析 `legend.yaml` 和 `nova.yaml`
+- [ ] 能够按规则提取所有 keywords (name_en + name_cn + keywords)
+- [ ] 能够检测并处理新增/移除/内容变化
 - [ ] 能够创建符合模板的 Markdown 档案
 - [ ] 能够通过 API 查询和管理 Legend 数据
 - [ ] 单元测试覆盖率 >= 80%

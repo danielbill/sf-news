@@ -36,6 +36,65 @@
 
 ## 用户场景与验收标准
 
+### 场景 0: 自动采集奇点档案数据
+
+**用户工作界面**: `config/legend.yaml` 和 `config/nova.yaml`
+
+用户新增 Legend 实体到配置文件后，点击"刷新"按钮，系统建立档案并调用 AI 搜索采集基础信息，生成 Markdown 档案文件。
+
+**用户操作流程**:
+1. 用户在 `config/legend.yaml` 或 `config/nova.yaml` 中添加新的 Legend 定义
+   - `people` 下添加人物实体（包含旗下公司）
+   - `company` 下添加公司实体（包含关键人物）
+2. 用户在管理后台点击"刷新"按钮，调用 `/biz/legend_basedata/sync` API
+3. 系统扫描配置文件，更新 keywords，供新闻删选用。
+4. 系统调用智谱 AI 搜索采集相关信息
+5. 系统自动生成对应的 Markdown 档案文件
+
+**配置文件格式**:
+```yaml
+# legend.yaml (奇点实体 - 已验证)
+people:
+  musk:
+    keywords: [["马斯克", "埃隆·马斯克", "Elon Musk"]]
+    companies:
+      - tesla:
+          name_en: Tesla
+          name_cn: 特斯拉
+          key_roles: []
+          products:
+            - name: Tesla Bot
+              keywords: ["Tesla Bot", "擎天柱", "Optimus"]
+
+company:
+  anthropic:
+    name_en: Anthropic
+    name_cn:
+    key_roles:
+      - name: 达里奥·阿莫迪
+        keywords: ["Dario Amodei", "达里奥·阿莫迪"]
+    products:
+      - name: claude
+        keywords: ["claude"]
+```
+
+**验收标准**:
+- 系统能够正确解析 `legend.yaml` 和 `nova.yaml`
+- 系统能够提取所有 keywords 用于新闻筛选（name_en, name_cn, keywords 展平）
+- 系统能够根据 Legend 所在分支（people/company）选择合适的搜索策略
+- 系统能够使用智谱 AI 搜索 API 获取并提取结构化档案数据
+- 系统能够自动填充档案模板，生成完整的 Markdown 文件
+- 生成的档案包含：基础信息、创始人/核心人物、成立时间、业务描述、里程碑等
+- 采集失败时记录错误日志，不影响数据库记录的创建
+- 档案数据来源可追溯，标注采集时间和来源
+
+**技术实现要点**:
+- 使用 OpenAI SDK 兼容模式调用智谱 AI 搜索接口（`base_url: https://open.bigmodel.cn/api/paas/v4/`）
+- Keywords 提取规则：name_en + name_cn（如有）+ keywords（展平）
+- 搜索策略：根据实体所在分支（people 用"创始人"，company 用"公司"）构造搜索词
+- AI 提取：利用搜索结果的 AI 总结能力，提取结构化数据填充模板
+- 模板填充：复用现有的 `legend_org_template.md` 和 `legend_person_template.md`
+
 ### 场景 1: 查看奇点完整发展脉络
 
 用户可以查看某个奇点的完整发展情况，从奇点实体到全产业链，了解其如何推动文明变化。
@@ -69,31 +128,31 @@
 
 详见 [checklists/](checklists/) 目录：
 
-| 模块 | 文件 | 状态 |
-|------|------|------|
-| 模块 1: 奇点档案数据库 | [module-01-database.md](checklists/module-01-database.md) | 待实现 |
-| 模块 2: 财经数据同步 | [module-02-finance.md](checklists/module-02-finance.md) | 待实现 |
-| 模块 3: 战略口号跟踪 | [module-03-strategy.md](checklists/module-03-strategy.md) | 待实现 |
-| 模块 4: 赛道竞争分析 | [module-04-track.md](checklists/module-04-track.md) | 待实现 |
-| 模块 5: 供应链监测 | [module-05-supply-chain.md](checklists/module-05-supply-chain.md) | 待实现 |
-| 模块 6: 项目进展追踪 | [module-06-projects.md](checklists/module-06-projects.md) | 待实现 |
-| 模块 7: 国策配套分析 | [module-07-policy.md](checklists/module-07-policy.md) | 待实现 |
-| 模块 8: 全球备战态势 | [module-08-global-stance.md](checklists/module-08-global-stance.md) | 待实现 |
-| 模块 9: 观点情绪聚合 | [module-09-sentiment.md](checklists/module-09-sentiment.md) | 待实现 |
-| 模块 10: 估值模型 | [module-10-valuation.md](checklists/module-10-valuation.md) | 待实现 |
-| 模块 11: GDP 拉动计算 | [module-11-gdp-impact.md](checklists/module-11-gdp-impact.md) | 待实现 |
-| 模块 12: 增长速度预测 | [module-12-growth-prediction.md](checklists/module-12-growth-prediction.md) | 待实现 |
+| 模块                   | 文件                                                                        | 状态   |
+| ---------------------- | --------------------------------------------------------------------------- | ------ |
+| 模块 1: 奇点档案数据库 | [module-01-database.md](checklists/module-01-database.md)                   | 待实现 |
+| 模块 2: 财经数据同步   | [module-02-finance.md](checklists/module-02-finance.md)                     | 待实现 |
+| 模块 3: 战略口号跟踪   | [module-03-strategy.md](checklists/module-03-strategy.md)                   | 待实现 |
+| 模块 4: 赛道竞争分析   | [module-04-track.md](checklists/module-04-track.md)                         | 待实现 |
+| 模块 5: 供应链监测     | [module-05-supply-chain.md](checklists/module-05-supply-chain.md)           | 待实现 |
+| 模块 6: 项目进展追踪   | [module-06-projects.md](checklists/module-06-projects.md)                   | 待实现 |
+| 模块 7: 国策配套分析   | [module-07-policy.md](checklists/module-07-policy.md)                       | 待实现 |
+| 模块 8: 全球备战态势   | [module-08-global-stance.md](checklists/module-08-global-stance.md)         | 待实现 |
+| 模块 9: 观点情绪聚合   | [module-09-sentiment.md](checklists/module-09-sentiment.md)                 | 待实现 |
+| 模块 10: 估值模型      | [module-10-valuation.md](checklists/module-10-valuation.md)                 | 待实现 |
+| 模块 11: GDP 拉动计算  | [module-11-gdp-impact.md](checklists/module-11-gdp-impact.md)               | 待实现 |
+| 模块 12: 增长速度预测  | [module-12-growth-prediction.md](checklists/module-12-growth-prediction.md) | 待实现 |
 
 ## 数据采集手段
 
 奇点研究员可重复使用所有手段进行数据采集：
 
-| 手段 | 用途 |
-|------|------|
-| `/baidu-ai-search` | 智能信息聚合采集 |
-| `/github-kb` | 在 GitHub 上找到符合需求的各种工具 |
-| `flaskSite1` 项目 | 财经数据采集接口及数据库 |
-| 新闻采集业务（已有） | 新闻源数据 |
+| 手段                 | 用途                               |
+| -------------------- | ---------------------------------- |
+| `/baidu-ai-search`   | 智能信息聚合采集                   |
+| `/github-kb`         | 在 GitHub 上找到符合需求的各种工具 |
+| `flaskSite1` 项目    | 财经数据采集接口及数据库           |
+| 新闻采集业务（已有） | 新闻源数据                         |
 
 ## 依赖关系
 

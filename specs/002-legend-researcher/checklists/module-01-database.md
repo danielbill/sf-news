@@ -1,7 +1,7 @@
 # 模块 1: 奇点档案数据库
 
 **层级**: 数据基础层
-**状态**: 待实现
+**状态**: ✅ 已完成 (2026-02-02)
 **优先级**: P0 - 必须最先实现，其他模块依赖此模块
 
 ## 功能描述
@@ -28,15 +28,15 @@ Legend 实体的基础信息存储和维护，支持人物(PERSON)和组织(ORGA
 
 ## 验收标准
 
-- [ ] 能够从 `config/news_keywords.yaml` 读取 Legend 定义
-- [ ] 能够检测 Legend 的新增、移除、keywords 变化
-- [ ] 支持 Legend 实体的创建、读取、更新、删除操作
-- [ ] 支持人物和组织两种类型
-- [ ] Markdown 档案文件按模板创建（`legend_person_template.md` / `legend_org_template.md`）
-- [ ] 易变数据存储于 SQLite 数据库
-- [ ] 提供数据验证和错误处理
-- [ ] 数据可被其他 11 个模块读取使用
-- [ ] 支持人工编辑和补充档案信息
+- [x] 能够从 `config/news_keywords.yaml` 读取 Legend 定义
+- [x] 能够检测 Legend 的新增、移除、keywords 变化
+- [x] 支持 Legend 实体的创建、读取、更新、删除操作
+- [x] 支持人物和组织两种类型
+- [x] Markdown 档案文件按模板创建（`legend_person_template.md` / `legend_org_template.md`）
+- [x] 易变数据存储于 SQLite 数据库
+- [x] 提供数据验证和错误处理
+- [x] 数据可被其他 11 个模块读取使用
+- [x] 支持人工编辑和补充档案信息
 
 ## 存储架构
 
@@ -59,8 +59,21 @@ Legend 实体的基础信息存储和维护，支持人物(PERSON)和组织(ORGA
 
 ## 输出物
 
-- `models/legend.py` - Legend 数据模型（SQLite）
-- `services/legend_file_service.py` - Markdown 档案读写服务
-- `services/legend_sync_service.py` - keywords.yaml 同步服务
-- `api/biz/legend_basedata.py` - 后台业务 API
-- `tests/test_legend_database.py` - 单元测试
+- [x] `models/legend.py` - Legend 数据模型（SQLite）
+- [x] `services/legend_file.py` - Markdown 档案读写服务
+- [x] `services/legend_sync.py` - keywords.yaml 同步服务
+- [x] `api/biz/legend_basedata.py` - 后台业务 API
+- [x] `tools/fetcher.py` - AI 搜索工具类
+- [x] `services/researcher.py` - 奇点研究员总调度
+- [x] `services/people_query.md` - 人物查询模板
+- [x] `services/company_query.md` - 公司查询模板
+- [ ] `tests/test_legend_database.py` - 单元测试
+
+## Scene 0: AI 自动采集进展
+
+- [x] Fetcher 工具类 - 封装百度 AI 搜索 API
+- [x] 人物查询模板 - 3次查询（基础信息、伟愿理念、创业历程）
+- [x] 公司查询模板 - 3次查询（基础信息、产品业务、发展历程）
+- [x] Researcher 调度 - 解析模板、分次查询、拼接结果
+- [ ] 集成到 legend_sync 同步流程
+- [ ] 测试验证

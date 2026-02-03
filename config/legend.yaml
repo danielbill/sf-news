@@ -1,35 +1,141 @@
-# 奇点人物配置文件
+# 奇点配置文件
 # Legend = 能够引发文明级跃迁的"伟人"
 
-legends:
-  # 埃隆·马斯克
-  - id: "musk"
-    name: "Elon Musk"
-    name_cn: "马斯克"
-    tier: "singularity"
-    company_id: "TSLA"
-    role: "CEO"
-    description: "特斯拉、SpaceX、X 创始人，推动电动车、商业航天、AI 多个领域革命"
+people:
+  musk:
+    keywords:
+      - ["马斯克", "埃隆·马斯克", "Elon Musk"]
+    companies:
+      - tesla:
+          name_en: Tesla
+          name_cn: 特斯拉
+          key_roles: []
+          products:
+            - name: roadster
+              keywords: ["roadster"]
+            - name: Tesla Bot
+              keywords: ["Tesla Bot", "擎天柱", "Optimus"]
+      - spacex:
+          name_en: SpaceX
+          name_cn:
+          key_roles: []
+          products:
+            - name: Starship
+              keywords: ["星舰", "Starship", "猎鹰","falcon"]
+            - name: Starlink
+              keywords: ["星链", "Starlink"]
+            - name: xAI
+              keywords: ["xai", "Grok"]
+      - neuralink:
+          name_en: Neuralink
+          name_cn:
+          key_roles: []
+          products: []
 
-  # 黄仁勋
-  - id: "huang"
-    name: "Jensen Huang"
-    name_cn: "黄仁勋"
-    tier: "singularity"
-    company_id: "NVDA"
-    role: "CEO"
-    description: "英伟达创始人，GPU 之父，AI 算力时代奠基人"
+  huang:
+    keywords:
+      - ["黄仁勋", "Jensen Huang"]
+    companies:
+      - nvidia:
+          name_en: NVIDIA
+          name_cn: 英伟达
+          key_roles: []
+          products:
+            - name: CUDA
+              keywords: ["CUDA", "cosmos"]
+            - name: Blackwell
+              keywords: ["Blackwell"]
+            - name: rubin
+              keywords: [ "rubin"]
+            - name: H100
+              keywords: ["H100", "H200"]
+            - name: 5090
+              keywords: ["5090"]
 
-  # 萨姆·奥尔特曼
-  - id: "altman"
-    name: "Sam Altman"
-    name_cn: "萨姆·奥尔特曼"
-    tier: "singularity"
-    company_id: "OPENAI"
-    role: "CEO"
-    description: "OpenAI 创始人，AGI 之路的引领者"
 
-# 说明：
-# tier: singularity（奇点人物）| quasi（准奇点人物）
-# company_id: 对应 company.yaml 中的公司 ID
-# role: CEO | CTO | 创始人 | 董事长 等
+  altman:
+    keywords:
+      - ["奥尔特曼", "Sam Altman"]
+    companies:
+      - openai:
+          name_en: OpenAI
+          name_cn:
+          key_roles: []
+          products:
+            - name: ChatGPT
+              keywords: ["ChatGPT", "GPT"]
+            - name: Codex
+              keywords: ["codex"]
+
+company:
+  anthropic:
+    name_en: Anthropic
+    name_cn:
+    key_roles:
+      - name: 达里奥·阿莫迪
+        keywords: ["Dario Amodei", "达里奥·阿莫迪"]
+      - name: 丹妮拉·阿莫迪
+        keywords: ["Daniela Amodei", "丹妮拉·阿莫迪"]
+    products:
+      - name: claude
+        keywords: ["claude"]
+      - name: claude code
+        keywords: ["claude code","claudecode"]
+      - name: claude cowork
+        keywords: ["claude cowork"]
+
+  google:
+    name_en: Google
+    name_cn: 谷歌
+    key_roles:
+      - name: 拉里·佩奇
+        keywords: ["拉里·佩奇", "Larry Page"]
+      - name: 谢尔盖·布林
+        keywords: ["谢尔盖·布林", "Sergey Brin"]
+      - name: 桑达尔·皮查伊
+        keywords: ["桑达尔·皮查伊", "Sundar Pichai"]
+    products:
+      - name: Android
+        keywords: ["android"]
+      - name: Gemini
+        keywords: ["gemine", "Gemini"]
+      - name: TPU
+        keywords: ["TPU","Ironwood"]
+      - name: 捕日者计划
+        keywords: ["捕日者计划"]
+
+  microsoft:
+    name_en: Microsoft
+    name_cn: 微软
+    key_roles:
+      - name: 比尔·盖茨
+        keywords: ["比尔·盖茨", "Bill Gates"]
+    products:
+      - name: MAIA
+        keywords: ["maia"]
+
+  alibaba:
+    name_en: Alibaba
+    name_cn: 阿里巴巴
+    key_roles:
+      - name: 马云
+        keywords: ["马云"]
+    products:
+      - name: 千问
+        keywords: ["千问", "qwen"]
+      - name: 平头哥
+        keywords: ["平头哥","真武"]
+
+  huawei:
+    name_en: Huawei
+    name_cn: 华为
+    key_roles:
+      - name: 任正非
+        keywords: ["任正非"]
+    products:
+      - name: 昇腾
+        keywords: ["昇腾", "升腾"]
+      - name: 鸿蒙
+        keywords: ["鸿蒙"]
+      - name: 鲲鹏
+        keywords: ["鲲鹏"]

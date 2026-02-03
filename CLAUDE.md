@@ -10,18 +10,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### 核心概念
 
-| 概念 | 定义 |
-|------|------|
-| **Legend（奇点）** | 能够引发文明级跃迁的实体（人物或组织），已开启新时代、全球公认、不可逆 |
-| **Supernova（超新星）** | 正在爆发式成长、极有可能成为奇点但也可能快速陨落的实体 |
-| **Front** | 由奇点人物引发的整个文明冲击波（公司、战略、技术、供应链、资本流向） |
+| 概念                    | 定义                                                                   |
+| ----------------------- | ---------------------------------------------------------------------- |
+| **Legend（奇点）**      | 能够引发文明级跃迁的实体（人物或组织），已开启新时代、全球公认、不可逆 |
+| **Supernova（超新星）** | 正在爆发式成长、极有可能成为奇点但也可能快速陨落的实体                 |
+| **Front**               | 由奇点人物引发的整个文明冲击波（公司、战略、技术、供应链、资本流向）   |
 
 ### 奇点与超新星
 
-| 等级 | 定义 | 例子 |
-|------|------|------|
+| 等级            | 定义                           | 例子                                                            |
+| --------------- | ------------------------------ | --------------------------------------------------------------- |
 | **SINGULARITY** | 已开启新时代，既定事实，不可逆 | 黄仁勋（AI算力时代）、马斯克（太空+电动车）、Google（信息时代） |
-| **SUPERNOVA** | 爆发中，AGI实现后可能成为奇点 | Sam Altman、Anthropic、Satya Nadella |
+| **SUPERNOVA**   | 爆发中，AGI实现后可能成为奇点  | Sam Altman、Anthropic、Satya Nadella                            |
 
 **核心哲学**：奇点是必然影响所有人的。
 
@@ -29,19 +29,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 关键文档导航
 
-| 类型 | 文档 |
-|------|------|
-| **项目哲学** | [.README.md](.README.md) |
-| **Legend 档案索引** | [data/legend_index.md](data/legend_index.md) |
-| **奇点档案设计理念** | [design/legend/奇点档案设计理念.md](design/legend/奇点档案设计理念.md) |
-| **Legend 资料库设计** | [design/legend_database_design.md](design/legend_database_design.md) |
-| **页面设计索引** | [design/README.md](design/README.md) |
-| **技术栈** | [docs/tech_stack.md](docs/tech_stack.md) |
-| **前端架构** | [docs/frontend_architecture.md](docs/frontend_architecture.md) |
-| **API 文档** | [docs/api.md](docs/api.md) |
-| **测试规范** | [docs/testing.md](docs/testing.md) |
-| **设计方案** | [docs/design.md](docs/design.md) |
-| **开发计划** | [docs/development_plan.md](docs/development_plan.md) |
+| 类型                  | 文档                                                                   |
+| --------------------- | ---------------------------------------------------------------------- |
+| **项目哲学**          | [.README.md](.README.md)                                               |
+| **Legend 档案索引**   | [data/legend_index.md](data/legend_index.md)                           |
+| **奇点档案设计理念**  | [design/legend/奇点档案设计理念.md](design/legend/奇点档案设计理念.md) |
+| **Legend 资料库设计** | [design/legend_database_design.md](design/legend_database_design.md)   |
+| **页面设计索引**      | [design/README.md](design/README.md)                                   |
+| **技术栈**            | [docs/tech_stack.md](docs/tech_stack.md)                               |
+| **前端架构**          | [docs/frontend_architecture.md](docs/frontend_architecture.md)         |
+| **API 文档**          | [docs/api.md](docs/api.md)                                             |
+| **测试规范**          | [docs/testing.md](docs/testing.md)                                     |
+| **设计方案**          | [docs/design.md](docs/design.md)                                       |
+| **开发计划**          | [docs/development_plan.md](docs/development_plan.md)                   |
 
 ---
 
@@ -99,3 +99,18 @@ gh workflow run crawler.yml
 - [fix_plan](.ralph/@fix_plan.md) - Ralph 任务计划
 
 【reload】重新读取 CLAUDE.md
+
+
+
+## 对外依赖
+
+百度搜索接口资料参考：
+D:\workspace\cybcortex\1技能库\doc
+
+财经接口调用：
+D:\量化研究\数据管理\A股相关数据采集
+
+
+## 其他
+
+当用户要求保存重要谈话内容时，总结当前上下文，以【话题+yymmdd】生成文件，保存到 临时话题\ 目录下。

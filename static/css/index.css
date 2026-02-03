@@ -275,15 +275,15 @@ body {
 .timeline-card::before {
     content: '';
     position: absolute;
-    top: 10px;
+    top: 0px;
     left: 50%;
     transform: translateX(-50%);
-    width: 96%;
+    width: 100%;
     height: calc(100% - 20px);
-    background-size: cover;
+    background-size: contain;
     background-position: center top;
     background-repeat: no-repeat;
-    opacity: 0.2;
+    opacity: 0.75;
     pointer-events: none;
     z-index: 0;
     transition: opacity 0.2s ease;

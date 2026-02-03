@@ -254,6 +254,44 @@
 
 ---
 
+## Phase 8: Scene 0 - AI 档案自动采集
+
+**Purpose**: 使用百度 AI 搜索自动采集 Legend 档案数据
+
+### 工具层实现
+
+- [x] T057 [Tools] 创建 Fetcher 工具类 in src/tools/fetcher.py
+  - 封装百度 AI 搜索 API 调用
+  - 单次查询，返回结构化结果
+
+### 查询模板实现
+
+- [x] T058 [P] [Services] 创建人物查询模板 in src/services/people_query.md
+  - 第一次查询：基础信息 + 家庭背景 + 教育背景
+  - 第二次查询：伟愿与理念 + 金句库
+  - 第三次查询：创业历程 + 公司矩阵 + 关键里程碑
+- [x] T059 [P] [Services] 创建公司查询模板 in src/services/company_query.md
+  - 第一次查询：公司基础信息 + 创始团队
+  - 第二次查询：核心产品/服务 + 业务模式
+  - 第三次查询：发展历程 + 关键里程碑 + 文明级影响
+
+### 研究员调度实现
+
+- [x] T060 [Services] 创建 Researcher 总调度 in src/services/researcher.py
+  - 解析查询模板（支持多轮查询定义）
+  - 变量替换（{id}, {name_cn}, {name_en}, {avatar} 等）
+  - 分次调用 Fetcher（QPS 限制：每次间隔 1 秒）
+  - 拼接 Markdown 结果（无表格，便于合并）
+
+### 待完成任务
+
+- [ ] T061 [Services] 集成 AI 采集到 legend_sync 同步流程
+- [ ] T062 [Tests] AI 采集功能测试
+- [ ] T063 [Services] 创建产品查询模板 in src/services/product_query.md
+- [ ] T064 [Services] 实现 archive 档案渲染服务
+
+---
+
 ## Notes
 
 - [P] 任务 = 不同文件，无依赖，可并行

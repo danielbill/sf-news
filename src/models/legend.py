@@ -188,6 +188,7 @@ class CompanyRelationCreate(BaseModel):
     role: Optional[str] = None
     is_primary: bool = False
     start_date: Optional[str] = None
+    end_date: Optional[str] = None
 
 
 # =============================================================================
@@ -234,4 +235,4 @@ class YamlLegendEntry(BaseModel):
 class YamlKeywordsConfig(BaseModel):
     """news_keywords.yaml 解析结果"""
     legends: Dict[str, List[List[str]]]  # legend_id -> keywords
-    front: List[List[str]]                # front 关键词
+    front: List[List[str]]                  # front 关键词

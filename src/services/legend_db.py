@@ -264,13 +264,13 @@ class LegendDB:
         params.append(legend_id)
 
         with self.get_connection() as conn:
-            conn.execute(f"""
+            cursor = conn.execute(f"""
                 UPDATE legends
                 SET {', '.join(updates)}
                 WHERE id = ?
             """, params)
             conn.commit()
-            return conn.rowcount > 0
+            return cursor.rowcount > 0
 
     def delete_legend(self, legend_id: str) -> bool:
         """删除 Legend（软删除/归档）"""

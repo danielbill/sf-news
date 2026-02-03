@@ -34,7 +34,8 @@
       "Bash(git clone:*)",
       "Bash(chmod:*)",
       "Bash(bash .specify/scripts/bash/create-idea.sh:*)",
-      "Bash(bash \"D:\\\\ai_tools\\\\Singularity-Front\\\\.specify\\\\scripts\\\\bash\\\\check-prerequisites.sh\" --json)"
+      "Bash(bash \"D:\\\\ai_tools\\\\Singularity-Front\\\\.specify\\\\scripts\\\\bash\\\\check-prerequisites.sh\" --json)",
+      "Bash(if not exist \"D:\\\\ai_tools\\\\Singularity-Front\\\\tests\" mkdir \"D:\\\\ai_tools\\\\Singularity-Front\\\\tests\")"
     ]
   }
 }
