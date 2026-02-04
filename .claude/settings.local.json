@@ -35,7 +35,13 @@
       "Bash(chmod:*)",
       "Bash(bash .specify/scripts/bash/create-idea.sh:*)",
       "Bash(bash \"D:\\\\ai_tools\\\\Singularity-Front\\\\.specify\\\\scripts\\\\bash\\\\check-prerequisites.sh\" --json)",
-      "Bash(if not exist \"D:\\\\ai_tools\\\\Singularity-Front\\\\tests\" mkdir \"D:\\\\ai_tools\\\\Singularity-Front\\\\tests\")"
+      "Bash(if not exist \"D:\\\\ai_tools\\\\Singularity-Front\\\\tests\" mkdir \"D:\\\\ai_tools\\\\Singularity-Front\\\\tests\")",
+      "Bash(flake8:*)",
+      "Bash(py -m py_compile:*)",
+      "Bash(venvScriptspython.exe:*)",
+      "Bash(\"venv/Scripts/python.exe\":*)",
+      "Bash(\"venv/Scripts/python.exe\" tests/test_bytedance_research.py)",
+      "Bash(agent-browser:*)"
     ]
   }
 }

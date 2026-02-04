@@ -503,3 +503,137 @@ class LegendSyncService:
 - [ ] 能够通过 API 查询和管理 Legend 数据
 - [ ] 单元测试覆盖率 >= 80%
 - [ ] 所有验收标准达成
+
+---
+
+## 10. Scene 0: AI 档案自动采集 (扩展设计)
+
+### 10.1 系统架构
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    legend_sync                              │
+│  - 扫描 legend.yaml                                          │
+│  - 检测变更（新增/删除/修改）                                  │
+│  - 更新内存中的 legend dict 和 keywords dict                  │
+│  - 新增时调用 researcher                                     │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    researcher                               │
+│  - 接收新增的 legend 数据包                                   │
+│  - 拆解研究任务（company / people / product）                 │
+│  - 循环调用 queryer                                          │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    queryer                                  │
+│  - 读取 YAML 模板（company_query.yaml 等）                   │
+│  - 循环调用 AI 查询（每段间隔 1 秒）                           │
+│  - 调用 render 生成 Markdown                                  │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    render                                   │
+│  - 分为 CompanyRender / PeopleRender / ProductRender         │
+│  - 接收多次查询结果                                           │
+│  - to_markdown() 生成完整内容                                 │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    saver                                    │
+│  - 读取 research_config.yaml 获取输出路径                     │
+│  - 保存到 data/company/ / data/people/ / data/product/       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 10.2 组件职责
+
+| 组件 | 职责 |
+|------|------|
+| **legend_sync** | 扫描配置、检测变更、更新内存、新增时调用 researcher |
+| **researcher** | 拆解任务（company/people/product）、循环调用 queryer |
+| **queryer** | 读取 YAML 模板、循环 AI 查询、调用 render |
+| **render** | 累积查询结果、生成 Markdown |
+| **saver** | 读取配置、保存文件 |
+
+### 10.3 YAML 模板格式
+
+**config/research/company_query.yaml**:
+```yaml
+queries:
+  - search: "{name_cn} {name_en} 公司介绍 成立时间 创始人"
+    instruction: |
+      请搜集 {name_cn} ({name_en}) 的以下信息，按 Markdown 格式输出：
+      ## 公司基础信息
+      - **ID**：{id}
+      - **英文名**：{name_en}
+      - **中文名**：{name_cn}
+      - **成立时间**：
+      - **总部地点**：
+      - **简短介绍**：
+
+  - search: "{name_cn} {name_en} 产品 服务 业务模式"
+    instruction: |
+      ## 核心产品/服务
+      ...
+
+  - search: "{name_cn} {name_en} 发展史 里程碑 融资"
+    instruction: |
+      ## 发展历程
+      ...
+```
+
+### 10.4 配置文件
+
+**config/research_config.yaml**:
+```yaml
+# AI 档案采集配置
+# entity_type 可选值: legend | nova | front
+
+# 按内容类型配置输出路径模板，程序自动叠加 {entity_type}
+output_paths:
+  company: "data/{entity_type}/company"
+  people: "data/{entity_type}/people"
+  product: "data/{entity_type}/product"
+
+# 查询模板配置
+templates:
+  company: "config/research/company_query.yaml"
+  people: "config/research/people_query.yaml"
+  product: "config/research/product_query.yaml"
+
+# AI 查询参数配置
+query_params:
+  max_results: 10
+  search_recency: "year"
+  query_interval: 1
+  max_completion_tokens: 8192
+```
+
+### 10.5 文件清单
+
+| 文件 | 说明 | 状态 |
+|------|------|------|
+| config/research_config.yaml | 研究配置 | 待创建 |
+| config/research/company_query.yaml | 公司查询模板 | 待创建 |
+| config/research/people_query.yaml | 人物查询模板 | 待创建 |
+| config/research/product_query.yaml | 产品查询模板 | 待创建 |
+| src/services/queryer.py | 通用查询器 | 待创建 |
+| src/services/render.py | 渲染器 | 待创建 |
+| src/services/saver.py | 保存器 | 待创建 |
+| src/services/researcher.py | 研究员调度（重构） | 待修改 |
+| src/services/legend_sync.py | 同步服务（修改） | 待修改 |
+
+### 10.6 实现步骤
+
+1. **创建配置和模板文件** - research_config.yaml, *_query.yaml
+2. **实现 queryer** - 通用查询器
+3. **实现 render** - 三种渲染器
+4. **实现 saver** - 保存器
+5. **重构 researcher** - 任务拆解器
+6. **集成到 legend_sync** - 调用 researcher

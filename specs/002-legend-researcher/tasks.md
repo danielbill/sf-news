@@ -292,6 +292,66 @@
 
 ---
 
+## Phase 9: Scene 0 - AI 档案自动采集 (架构重构)
+
+**Purpose**: 重构 AI 档案采集架构，实现 queryer → render → saver 流程
+
+### 配置和模板
+
+- [x] T065 [Config] 创建 research_config.yaml in config/
+  - 定义 output_paths (company/people/product)
+  - 定义 templates 路径
+- [x] T066 [Config] 创建 company_query.yaml in config/research/
+  - 3次查询：基础信息、产品服务、发展历程
+- [x] T067 [Config] 创建 people_query.yaml in config/research/
+  - 3次查询：基础信息、伟愿理念、创业历程
+- [x] T068 [Config] 创建 product_query.yaml in config/research/
+  - 3次查询：基础信息、功能特性、市场表现
+
+### queryer (通用查询器)
+
+- [x] T069 [Services] 创建 queryer.py in src/services/
+  - _load_template() 读取 YAML 模板
+  - _replace_variables() 变量替换
+  - research() 主流程：循环调用 AI
+- [ ] T070 [Tests] queryer 测试 in tests/test_queryer.py
+
+### render (渲染器)
+
+- [x] T071 [Services] 创建 render.py in src/services/
+  - BaseRender 基类
+  - CompanyRender / PeopleRender / ProductRender
+  - add_result() 累积结果
+  - to_markdown() 生成完整内容
+- [ ] T072 [Tests] render 测试 in tests/test_render.py
+
+### saver (保存器)
+
+- [x] T073 [Services] 创建 saver.py in src/services/
+  - _load_config() 读取 research_config.yaml
+  - save() 保存文件到对应目录
+- [ ] T074 [Tests] saver 测试 in tests/test_saver.py
+
+### researcher (任务拆解器)
+
+- [x] T075 [Services] 重构 researcher.py in src/services/
+  - _parse_legend_data() 解析 legend 数据包
+  - _execute_task() 执行单个研究任务
+  - research() 批量研究入口
+- [ ] T076 [Tests] researcher 测试 in tests/test_researcher.py
+
+### legend_sync 集成
+
+- [x] T077 [Services] 修改 legend_sync.py in src/services/
+  - 支持 legend.yaml 和 nova.yaml 两种格式
+  - 检测新增时调用 researcher
+  - 更新内存中的 legend dict 和 keywords dict
+- [x] T078 [Integration] 集成测试：字节跳动档案生成
+  - 调用 nova 同步
+  - 验证生成 data/nova/company/bytedance.md
+
+---
+
 ## Notes
 
 - [P] 任务 = 不同文件，无依赖，可并行

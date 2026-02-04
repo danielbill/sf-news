@@ -1,0 +1,31 @@
+bytedance:
+    name_en: ByteDance
+    name_cn: 字节跳动
+    key_roles:
+      - name: 张一鸣
+        keywords: ["张一鸣", "字节跳动创始人"]
+      - name: 梁汝波
+        keywords: ["梁汝波", "字节跳动CEO"]
+    products:
+      - name: 豆包
+        keywords: ["豆包"]
+      - name: Dola
+        keywords: ["dola"]
+      - name: 火山引擎
+        keywords: ["火山引擎"]
+      - name: TikTok
+        keywords: ["TikTok"]
+      - name: 抖音
+        keywords: ["抖音"]
+      # - name: 今日头条
+      #   keywords: ["今日头条", "信息分发", "个性化资讯", "垂类内容"]
+      # - name: 剪映
+      #   keywords: ["剪映", "视频编辑", "一键成片", "智能字幕"]
+      # - name: 飞书
+      #   keywords: ["飞书", "企业办公", "OKR", "协同工具"]
+      # - name: 抖音电商
+      #   keywords: ["抖音电商", "直播带货", "货架电商", "GMV"]
+      # - name: 番茄小说
+      #   keywords: ["番茄小说", "免费阅读", "网文IP", "红果短剧联动"]
+      # - name: 西瓜视频
+      #   keywords: ["西瓜视频", "中视频", "长内容", "知识科普"]

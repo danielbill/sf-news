@@ -1,6 +1,6 @@
 """Legend 同步服务
 
-从 news_keywords.yaml 同步 Legend 数据到数据库和 Markdown 文件。
+支持从 legend.yaml 和 nova.yaml 同步 Legend 数据，并调用 AI 采集档案。
 """
 
 import hashlib
@@ -9,48 +9,73 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional, Set
 from datetime import datetime
 import json
+import sys
 
-from ..models.legend import (
+# 添加项目路径
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from models.legend import (
     Legend,
     LegendType,
     LegendTier,
     ImpactLevel,
     LegendCreate,
-    YamlKeywordsConfig,
-    YamlLegendEntry,
     SyncResult,
 )
-from ..services.legend_db import LegendDB
-from ..services.legend_file import LegendFileService
+from services.legend_db import LegendDB
+from services.researcher import Researcher
 
 
 class LegendSyncService:
-    """Legend 同步服务 - 核心同步逻辑"""
+    """Legend 同步服务 - 支持 legend.yaml 和 nova.yaml 格式"""
 
     def __init__(
         self,
-        keywords_path: str = "config/news_keywords.yaml",
+        legend_path: str = "config/legend.yaml",
+        nova_path: str = "config/nova.yaml",
         db: Optional[LegendDB] = None,
-        file_service: Optional[LegendFileService] = None
+        entity_type: str = "legend"  # legend | nova | front
     ):
-        self.keywords_path = Path(keywords_path)
+        self.legend_path = Path(legend_path)
+        self.nova_path = Path(nova_path)
+        self.entity_type = entity_type
         self.db = db or LegendDB()
-        self.file_service = file_service or LegendFileService()
+        self.researcher = Researcher(entity_type=entity_type)
 
         # 确保数据库已初始化
         self.db.init_db()
 
-    def sync(self, auto_fetch: bool = False) -> SyncResult:
+    def sync(self, auto_fetch: bool = True) -> SyncResult:
         """执行同步
 
         Args:
-            auto_fetch: 是否自动调用 /baidu-ai-search 采集数据
+            auto_fetch: 是否自动调用 AI 采集数据（默认 True）
 
         Returns:
             SyncResult: 同步结果
         """
-        # 1. 读取 YAML 文件
-        yaml_data = self._load_yaml()
+        # 根据 entity_type 选择配置文件
+        if self.entity_type == "legend":
+            yaml_path = self.legend_path
+        elif self.entity_type == "nova":
+            yaml_path = self.nova_path
+        else:
+            return SyncResult(
+                has_changes=False,
+                file_hash="",
+                synced_at=datetime.now()
+            )
+
+        if not yaml_path.exists():
+            print(f"配置文件不存在: {yaml_path}")
+            return SyncResult(
+                has_changes=False,
+                file_hash="",
+                synced_at=datetime.now()
+            )
+
+        # 加载 YAML
+        yaml_data = self._load_yaml(yaml_path)
         if not yaml_data:
             return SyncResult(
                 has_changes=False,
@@ -58,33 +83,41 @@ class LegendSyncService:
                 synced_at=datetime.now()
             )
 
-        # 2. 计算文件哈希
-        file_hash = self._calculate_file_hash()
+        # 计算文件哈希
+        file_hash = self._calculate_file_hash(yaml_path)
 
-        # 3. 解析 Legend 定义
-        yaml_legends = yaml_data.get("legend", {})
-        yaml_legend_ids = set(yaml_legends.keys())
+        # 解析 Legend 数据
+        # legend.yaml 格式: {people: {...}, company: {...}}
+        # nova.yaml 格式: 直接是公司字典 {bytedance: {...}}
+        if "people" in yaml_data or "company" in yaml_data:
+            # legend.yaml 格式
+            people_legends = yaml_data.get("people", {})
+            company_legends = yaml_data.get("company", {})
+            all_legends = {**people_legends, **company_legends}
+        else:
+            # nova.yaml 格式（直接公司字典）
+            all_legends = yaml_data
 
-        # 4. 获取现有 Legend IDs
+        yaml_legend_ids = set(all_legends.keys())
+
+        # 获取现有 Legend IDs
         existing_ids = set(self.db.get_all_legend_ids())
 
-        # 5. 检测变化
+        # 检测变化
         added = yaml_legend_ids - existing_ids
         removed = existing_ids - yaml_legend_ids
         common = existing_ids & yaml_legend_ids
 
-        # 6. 检测关键词变化
-        keywords_updated = []
+        # 检测内容变化（简化的哈希比较）
+        updated = []
         for legend_id in common:
-            keywords_list = yaml_legends[legend_id]
-            flat_keywords = self._flatten_keywords(keywords_list)
-            new_hash = self._calculate_keywords_hash(flat_keywords)
+            # 检查 YAML 内容是否变化
+            legend_hash = self._calculate_legend_hash(all_legends[legend_id])
+            # 这里可以扩展为与数据库中的哈希比较
+            # 暂时不处理更新
 
-            if self.db.keywords_changed(legend_id, flat_keywords, new_hash):
-                keywords_updated.append(legend_id)
-
-        # 7. 如果没有变化，直接返回
-        if not added and not removed and not keywords_updated:
+        # 如果没有变化，直接返回
+        if not added and not removed and not updated:
             return SyncResult(
                 has_changes=False,
                 file_hash=file_hash,
@@ -92,26 +125,57 @@ class LegendSyncService:
                 synced_at=datetime.now()
             )
 
-        # 8. 执行同步操作
-        # 8.1 新增 Legends
-        for legend_id in added:
-            self._create_legend_from_yaml(legend_id, yaml_legends[legend_id])
+        # 执行同步操作
+        added_list = []
+        updated_list = []
 
-        # 8.2 更新关键词变化的 Legends
-        for legend_id in keywords_updated:
-            self._update_keywords(legend_id, yaml_legends[legend_id])
+        # 处理新增和更新的 Legends
+        for legend_id in added | set(updated):
+            legend_config = all_legends[legend_id]
 
-        # 8.3 移除 Legends（标记归档）
+            # 判断类型
+            if "key_roles" in legend_config:
+                # 公司格式（nova.yaml 或 legend.yaml/company）
+                legend_type = LegendType.ORGANIZATION
+            else:
+                # 人物格式（legend.yaml/people）
+                legend_type = LegendType.PERSON
+
+            # 创建或更新数据库记录
+            self._create_or_update_legend(legend_id, legend_config, legend_type)
+
+            # 调用 AI 采集
+            if auto_fetch:
+                print(f"\n[{self.entity_type}] AI 采集 {legend_id}...")
+                result = self.researcher.research_single(legend_id, legend_config)
+
+                if result["success"]:
+                    if legend_id in added:
+                        added_list.append(legend_id)
+                    else:
+                        updated_list.append(legend_id)
+                    print(f"  [OK] AI 采集完成")
+                else:
+                    print(f"  [X] AI 采集失败: {result.get('errors', {})}")
+            else:
+                if legend_id in added:
+                    added_list.append(legend_id)
+                else:
+                    updated_list.append(legend_id)
+
+        # 处理移除的 Legends
+        removed_list = list(removed)
         for legend_id in removed:
             self._remove_legend(legend_id)
 
-        # 9. 记录同步日志
+        # 记录同步日志
         self.db.log_sync(
             sync_type="manual",
             details={
-                "added": list(added),
-                "removed": list(removed),
-                "keywords_updated": keywords_updated,
+                "entity_type": self.entity_type,
+                "added": added_list,
+                "removed": removed_list,
+                "updated": updated_list,
                 "file_hash": file_hash,
             }
         )
@@ -119,244 +183,138 @@ class LegendSyncService:
         return SyncResult(
             has_changes=True,
             file_hash=file_hash,
-            added=list(added),
-            removed=list(removed),
-            keywords_updated=keywords_updated,
-            unchanged=len(common) - len(keywords_updated),
+            added=added_list,
+            removed=removed_list,
+            keywords_updated=updated_list,
+            unchanged=len(common) - len(updated_list),
             synced_at=datetime.now()
         )
 
-    def _load_yaml(self) -> Optional[Dict[str, Any]]:
+    def _load_yaml(self, yaml_path: Path) -> Optional[Dict[str, Any]]:
         """加载 YAML 文件"""
-        if not self.keywords_path.exists():
+        if not yaml_path.exists():
             return None
 
-        with open(self.keywords_path, "r", encoding="utf-8") as f:
+        with open(yaml_path, "r", encoding="utf-8") as f:
             return yaml.safe_load(f)
 
-    def _calculate_file_hash(self) -> str:
+    def _calculate_file_hash(self, yaml_path: Path) -> str:
         """计算文件哈希值"""
-        content = self.keywords_path.read_bytes()
+        content = yaml_path.read_bytes()
         return hashlib.sha256(content).hexdigest()
 
-    def _calculate_keywords_hash(self, keywords: List[str]) -> str:
-        """计算关键词哈希值"""
-        content = json.dumps(keywords, sort_keys=True, ensure_ascii=False)
+    def _calculate_legend_hash(self, legend_config: Dict) -> str:
+        """计算 Legend 配置的哈希值"""
+        content = json.dumps(legend_config, sort_keys=True, ensure_ascii=False)
         return hashlib.sha256(content.encode()).hexdigest()
 
-    def _flatten_keywords(self, keywords: List[List[str]]) -> List[str]:
-        """展平关键词数组"""
-        result = []
-        for group in keywords:
-            if isinstance(group, list):
-                result.extend(group)
-            else:
-                result.append(str(group))
-        return result
-
-    def _infer_legend_type(self, legend_id: str, keywords: List[List[str]]) -> LegendType:
-        """推断 Legend 类型 (PERSON | ORGANIZATION)
-
-        规则:
-        - 如果关键词包含 "创始人"、"CEO"、"董事长" 等职位词 → PERSON
-        - 如果关键词包含公司典型词汇（股票代码模式、纯大写公司名）→ ORGANIZATION
-        - 默认 ORGANIZATION
-
-        从 news_keywords.yaml 的实际数据来看：
-        - musk: 人物（有"马斯克"）
-        - huang: 人物（有"黄仁勋"）
-        - altman: 人物（有"奥尔特曼"）
-        - anthropic: 组织（公司名，含人物名但主要是公司）
-        - google: 组织
-        - Microsoft: 组织
-        - alibaba: 组织
-        - huawei: 组织
-        """
-        # 优先：已知组织 ID（大小写不敏感）
-        known_orgs = {"google", "microsoft", "alibaba", "huawei", "anthropic"}
-        if legend_id.lower() in known_orgs:
-            return LegendType.ORGANIZATION
-
-        # 优先：已知人物 ID
-        known_people = {"musk", "huang", "altman"}
-        if legend_id.lower() in known_people:
-            return LegendType.PERSON
-
-        flat_keywords = self._flatten_keywords(keywords)
-        keywords_str = " ".join(flat_keywords).lower()
-
-        # 人物关键词（职位 + 姓名）
-        person_indicators = [
-            "创始人", "ceo", "cto", "董事长", "总裁",
-            "马斯克", "黄仁勋", "奥尔特曼", "比尔·盖茨", "马云", "任正非",
-            "埃隆", "jensen", "sam", "拉里", "谢尔盖", "桑达尔"
-        ]
-
-        # 组织关键词
-        org_indicators = [
-            "corporation", "inc", "ltd", "llc", "co.",
-            "公司", "集团", "科技", "智能"
-        ]
-
-        # 检查人物指标
-        for indicator in person_indicators:
-            if indicator.lower() in keywords_str:
-                return LegendType.PERSON
-
-        # 检查组织指标
-        for indicator in org_indicators:
-            if indicator.lower() in keywords_str:
-                return LegendType.ORGANIZATION
-
-        # 默认：组织
-        return LegendType.ORGANIZATION
-
-    def _extract_names(self, keywords: List[List[str]]) -> tuple[str, str]:
-        """从关键词中提取英文名和中文名
-
-        Returns:
-            (name_en, name_cn)
-        """
-        flat_keywords = self._flatten_keywords(keywords)
-
-        name_en = ""
-        name_cn = ""
-
-        for kw in flat_keywords:
-            # 纯英文 -> 英文名
-            if kw.encode("ascii", "ignore").decode() == kw and kw[0].isupper():
-                if not name_en:
-                    name_en = kw
-            # 包含中文 -> 中文名
-            elif any("\u4e00" <= c <= "\u9fff" for c in kw):
-                if not name_cn:
-                    name_cn = kw
-
-        return name_en, name_cn
-
-    def _create_legend_from_yaml(
+    def _create_or_update_legend(
         self,
         legend_id: str,
-        keywords: List[List[str]]
+        legend_config: Dict,
+        legend_type: LegendType
     ) -> None:
-        """从 YAML 创建 Legend"""
-        # 推断类型
-        legend_type = self._infer_legend_type(legend_id, keywords)
-
+        """创建或更新 Legend"""
         # 提取名称
-        name_en, name_cn = self._extract_names(keywords)
+        name_en = legend_config.get("name_en", "")
+        name_cn = legend_config.get("name_cn", "")
 
-        # 创建数据库记录
-        legend_create = LegendCreate(
-            id=legend_id,
-            type=legend_type,
-            name_en=name_en or legend_id,
-            name_cn=name_cn,
-            legend_tier=LegendTier.POTENTIAL,
-            impact_level=ImpactLevel.COMPANY,
-        )
+        # 检查是否已存在
+        existing = self.db.get_legend(legend_id)
 
-        self.db.create_legend(legend_create)
-
-        # 设置关键词
-        flat_keywords = self._flatten_keywords(keywords)
-        keywords_hash = self._calculate_keywords_hash(flat_keywords)
-
-        # 构建关键词组（保留原始分组）
-        keyword_groups = []
-        for i, group in enumerate(keywords):
-            keyword_groups.append({
-                "group_name": f"group_{i}",
-                "keywords": group if isinstance(group, list) else [group]
-            })
-
-        self.db.set_keywords(
-            legend_id,
-            keyword_groups,
-            source_hash=keywords_hash
-        )
-
-        # 创建 Markdown 文件
-        if legend_type == LegendType.PERSON:
-            self.file_service.create_person_file(legend_id, {
-                "name_en": name_en,
-                "name_cn": name_cn,
-                "bio_short": f"{name_cn or name_en} 的档案",
-                "keywords": flat_keywords,
+        if existing:
+            # 更新
+            self.db.update_legend(legend_id, {
+                "name_en": name_en or existing.name_en,
+                "name_cn": name_cn or existing.name_cn,
             })
         else:
-            self.file_service.create_org_file(legend_id, {
-                "name_en": name_en,
-                "name_cn": name_cn,
-                "bio_short": f"{name_cn or name_en} 的档案",
-                "keywords": flat_keywords,
-            })
+            # 创建
+            legend_create = LegendCreate(
+                id=legend_id,
+                type=legend_type,
+                name_en=name_en or legend_id,
+                name_cn=name_cn,
+                legend_tier=LegendTier.POTENTIAL,
+                impact_level=ImpactLevel.COMPANY,
+            )
+            self.db.create_legend(legend_create)
 
-        # 记录日志
-        self.db.log_sync(
-            sync_type="create",
-            legend_id=legend_id,
-            change_type="added",
-            details={"keywords_count": len(flat_keywords)}
-        )
+        # 设置关键词
+        keywords = self._extract_keywords(legend_config)
+        if keywords:
+            keyword_groups = [
+                {
+                    "group_name": "main",
+                    "keywords": keywords
+                }
+            ]
+            keywords_hash = self._calculate_legend_hash(legend_config)
+            self.db.set_keywords(legend_id, keyword_groups, source_hash=keywords_hash)
 
-    def _update_keywords(
-        self,
-        legend_id: str,
-        keywords: List[List[str]]
-    ) -> None:
-        """更新 Legend 的关键词"""
-        flat_keywords = self._flatten_keywords(keywords)
-        keywords_hash = self._calculate_keywords_hash(flat_keywords)
+    def _extract_keywords(self, legend_config: Dict) -> List[str]:
+        """从配置中提取关键词
 
-        # 构建关键词组
-        keyword_groups = []
-        for i, group in enumerate(keywords):
-            keyword_groups.append({
-                "group_name": f"group_{i}",
-                "keywords": group if isinstance(group, list) else [group]
-            })
+        规则：
+        - name_en: 提取
+        - name_cn: 提取（如果有）
+        - key_roles[].keywords: 展平提取
+        - products[].keywords: 展平提取
+        """
+        keywords = []
 
-        self.db.set_keywords(
-            legend_id,
-            keyword_groups,
-            source_hash=keywords_hash
-        )
+        # 名称
+        name_en = legend_config.get("name_en", "")
+        name_cn = legend_config.get("name_cn", "")
+        if name_en:
+            keywords.append(name_en)
+        if name_cn:
+            keywords.append(name_cn)
 
-        # 记录日志
-        self.db.log_sync(
-            sync_type="update",
-            legend_id=legend_id,
-            change_type="keywords_changed",
-            details={"keywords_count": len(flat_keywords)}
-        )
+        # 关键角色
+        for role in legend_config.get("key_roles", []):
+            keywords.extend(role.get("keywords", []))
+
+        # 产品
+        for product in legend_config.get("products", []):
+            keywords.extend(product.get("keywords", []))
+
+        # 去重
+        return list(set(keywords))
 
     def _remove_legend(self, legend_id: str) -> None:
         """移除 Legend（软删除）"""
-        # 获取 Legend 类型
-        legend = self.db.get_legend(legend_id)
-        if legend:
-            # 删除数据库记录
-            self.db.delete_legend(legend_id)
+        self.db.delete_legend(legend_id)
 
-            # 删除 Markdown 文件（可选，暂时保留）
-            # self.file_service.delete_file(legend_id, legend.type)
-
-        # 记录日志
-        self.db.log_sync(
-            sync_type="delete",
-            legend_id=legend_id,
-            change_type="removed",
-            details={}
-        )
-
-    def get_yaml_legends(self) -> YamlKeywordsConfig:
+    def get_yaml_legends(self) -> Dict[str, Dict]:
         """获取 YAML 中的 Legend 配置"""
-        yaml_data = self._load_yaml()
-        if not yaml_data:
-            return YamlKeywordsConfig(legends={}, front=[])
+        yaml_path = self.legend_path if self.entity_type == "legend" else self.nova_path
 
-        return YamlKeywordsConfig(
-            legends=yaml_data.get("legend", {}),
-            front=yaml_data.get("front", [])
+        yaml_data = self._load_yaml(yaml_path)
+        if not yaml_data:
+            return {}
+
+        # legend.yaml 格式
+        if "people" in yaml_data or "company" in yaml_data:
+            people_legends = yaml_data.get("people", {})
+            company_legends = yaml_data.get("company", {})
+            return {**people_legends, **company_legends}
+
+        # nova.yaml 格式
+        return yaml_data
+
+
+class NovaSyncService(LegendSyncService):
+    """Nova 同步服务（超新星实体）"""
+
+    def __init__(
+        self,
+        nova_path: str = "config/nova.yaml",
+        db: Optional[LegendDB] = None
+    ):
+        super().__init__(
+            legend_path="config/legend.yaml",
+            nova_path=nova_path,
+            db=db,
+            entity_type="nova"
         )

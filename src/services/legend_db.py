@@ -5,12 +5,16 @@
 
 import json
 import sqlite3
+import sys
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 
-from ..models.legend import (
+# 添加项目路径
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from models.legend import (
     Legend,
     LegendCreate,
     LegendUpdate,

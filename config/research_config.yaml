@@ -1,0 +1,21 @@
+# AI 档案采集配置
+# entity_type 可选值: legend | nova | front
+
+# 按内容类型配置输出路径模板，程序自动叠加 {entity_type}
+output_paths:
+  company: "data/{entity_type}/company"
+  people: "data/{entity_type}/people"
+  product: "data/{entity_type}/product"
+
+# 查询模板配置
+templates:
+  company: "config/research/company_query.yaml"
+  people: "config/research/people_query.yaml"
+  product: "config/research/product_query.yaml"
+
+# AI 查询参数配置
+query_params:
+  max_results: 10
+  search_recency: "year"
+  query_interval: 1
+  max_completion_tokens: 8192
