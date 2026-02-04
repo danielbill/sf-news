@@ -162,25 +162,29 @@ class Researcher:
                 }
 
             # 4. 调用 render
-            render_kwargs = {
-                "entity_id": task.entity_id,
-                "name_cn": task.name_cn,
-                "name_en": task.name_en,
-                "avatar": task.avatar,
-            }
             if task.content_type == "product":
-                render_kwargs.update({
+                # ProductRender 使用 product_id 参数
+                render_kwargs = {
                     "product_id": task.entity_id,
+                    "name_cn": task.name_cn,
+                    "name_en": task.name_en,
                     "company_id": task.company_id,
                     "company_name": task.company_name,
-                })
+                }
+            else:
+                # CompanyRender 和 PeopleRender 使用 entity_id
+                render_kwargs = {
+                    "entity_id": task.entity_id,
+                    "name_cn": task.name_cn,
+                    "name_en": task.name_en,
+                    "avatar": task.avatar,
+                }
 
             renderer = get_render(task.content_type, **render_kwargs)
 
             # 添加查询结果
             for result in query_result["results"]:
                 renderer.add_result(result["content"])
-                renderer.add_separator()
 
             # 生成 Markdown
             markdown = renderer.to_markdown()

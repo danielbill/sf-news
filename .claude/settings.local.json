@@ -41,7 +41,14 @@
       "Bash(venvScriptspython.exe:*)",
       "Bash(\"venv/Scripts/python.exe\":*)",
       "Bash(\"venv/Scripts/python.exe\" tests/test_bytedance_research.py)",
-      "Bash(agent-browser:*)"
+      "Bash(agent-browser:*)",
+      "Bash(fi:*)",
+      "Bash(done)",
+      "Skill(mybrowser)",
+      "Bash(\"venv/Scripts/python.exe\" -c \"import sys; sys.path.insert\\(0, ''src''\\); from services import researcher; r = researcher.Researcher\\(\\); print\\(''测试 ✓ 中文输出正常''\\)\")",
+      "Bash(\"venv/Scripts/python.exe\" -c \"import sys; sys.path.insert\\(0, ''src''\\); import src; exec\\(open\\(''test_step_by_step.py'', encoding=''utf-8''\\).read\\(\\)\\)\")",
+      "Bash(\"venv/Scripts/python.exe\" -c \"\nimport sys\nsys.path.insert\\(0, ''src''\\)\nimport src\n\nfrom services.queryer import Queryer\n\nqueryer = Queryer\\(\\)\nvariables = {\n    ''{id}'': ''bytedance'',\n    ''{name_cn}'': ''字节跳动'',\n    ''{name_en}'': ''ByteDance'',\n    ''{avatar}'': ''''\n}\n\nprint\\(''测试 Queryer 单次查询（仅第1个，max_results=2）...''\\)\nresult = queryer.research\\(\n    template_name=''company_query.yaml'',\n    variables=variables,\n    max_results=2\n\\)\n\nprint\\(f''成功: {result[\"\"success\"\"]}''\\)\nif result[''success'']:\n    print\\(f''结果数量: {len\\(result[\"\"results\"\"]\\)}''\\)\n    for i, r in enumerate\\(result[''results''], 1\\):\n        content = r[''content'']\n        print\\(f''结果{i}: 长度={len\\(content\\)}, 前100字符={content[:100]}''\\)\nelse:\n    print\\(f''错误: {result[\"\"error\"\"]}''\\)\n\")",
+      "Bash(\"D:/workspace/cybcortex/.venv/Scripts/python.exe\" \"D:/workspace/cybcortex/1技能库/py_code/gather/search/semantic_search.py\" \"字节跳动\" --max-results 3)"
     ]
   }
 }

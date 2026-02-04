@@ -30,7 +30,7 @@ router = APIRouter(
 # 初始化服务
 db = LegendDB()
 file_service = LegendFileService()
-sync_service = LegendSyncService(db=db, file_service=file_service)
+sync_service = LegendSyncService(db=db)
 
 
 # =============================================================================
