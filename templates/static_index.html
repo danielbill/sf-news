@@ -299,6 +299,11 @@
             {% endif %}
         }
 
+        /* 当鼠标悬停在右侧卡片时，左侧背景图变暗 */
+        .content:has(.trending-card:hover) .timeline-card::before {
+            opacity: 0.15;
+        }
+
         .timeline-item {
             position: relative;
             padding-left: 32px;
