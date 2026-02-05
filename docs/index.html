@@ -269,6 +269,10 @@
             box-shadow: 0 8px 40px rgba(85, 193, 255, 0.15);
         }
 
+        .timeline-card:hover::before {
+            opacity: 0.05;
+        }
+
         /* ========== 左侧时间线卡片 ========== */
         .timeline-card {
             box-shadow: 0 4px 30px rgba(28, 68, 142, 0.1);
@@ -297,10 +301,7 @@
             
         }
 
-        /* 当鼠标悬停在右侧卡片时，左侧背景图变暗 */
-        .content:has(.trending-card:hover) .timeline-card::before {
-            opacity: 0.15;
-        }
+
 
         .timeline-item {
             position: relative;
@@ -919,6 +920,30 @@
         <aside>
             <div class="trending-list" id="trendingList">
                 
+                    
+                    <article class="trending-card" onclick="window.open('https://wallstreetcn.com/livenews/3050613', '_blank')">
+                        <h3 class="trending-title">航升卫星完成1.6亿元A轮融资 湖南湘江新区推动商业航天产业发展</h3>      
+                        <div class="trending-meta">
+                            <span class="trending-source news-source">wallstreetcn-live</span>
+                            <span class="trending-time news-time">02-05 11:10</span>
+                        </div>
+                    </article>
+                    
+                    <article class="trending-card" onclick="window.open('https://wallstreetcn.com/livenews/3050609', '_blank')">
+                        <h3 class="trending-title">巴里克黄金将推进北美黄金资产IPO。</h3>      
+                        <div class="trending-meta">
+                            <span class="trending-source news-source">wallstreetcn-live</span>
+                            <span class="trending-time news-time">02-05 11:05</span>
+                        </div>
+                    </article>
+                    
+                    <article class="trending-card" onclick="window.open('https://api3.cls.cn/share/article/2281904?os=web&sv=8.4.6&app=CailianpressWeb', '_blank')">
+                        <h3 class="trending-title">财联社2月5日电，巴里克黄金将推进北美黄金资产首次公开募股。</h3>      
+                        <div class="trending-meta">
+                            <span class="trending-source news-source">cls-telegraph</span>
+                            <span class="trending-time news-time">02-05 11:04</span>
+                        </div>
+                    </article>
                     
                     <article class="trending-card" onclick="window.open('https://wallstreetcn.com/livenews/3050604', '_blank')">
                         <h3 class="trending-title">上期所：自2026年2月9日（星期一）收盘结算时起，涨跌停板幅度和交易保证金比例调整如下，黄金期货已上市合约的涨跌停板幅度调整为17%，套保持仓交易保证金比例调整为18%，一般持仓交易保证金比例调整为19%；白银期货已上市合约的涨跌停板幅度调整为20%，套保持仓交易保证金比例调整为21%，一般持仓交易保证金比例调整为22%。</h3>      
