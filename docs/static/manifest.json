@@ -1,7 +1,7 @@
 {
-  "name": "奇点新闻 - 文明前沿雷达系统",
+  "name": "奇点新闻 - 锁定文明奇点",
   "short_name": "奇点新闻",
-  "description": "实时追踪奇点人物及其生态系统的所有新闻动态",
+  "description": "聚焦奇点人物及巨企的一举一动",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0a0f",
