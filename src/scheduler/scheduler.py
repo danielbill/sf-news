@@ -16,11 +16,11 @@ class SchedulerManager:
 
     约束：
     - 最小抓取间隔：15分钟（900秒）
-    - 服务启动后延迟15秒再执行首次抓取
+    - 服务启动后延迟5秒再执行首次抓取
     """
 
     MIN_INTERVAL = 900  # 15分钟硬编码限制
-    INITIAL_DELAY = 15  # 启动后延迟15秒执行首次抓取
+    INITIAL_DELAY = 5  # 启动后延迟5秒执行首次抓取
 
     def __init__(self, config_dir: str = "config"):
         """初始化调度器
