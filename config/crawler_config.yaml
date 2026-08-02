@@ -16,7 +16,7 @@ network:
 
 # 存储配置
 storage:
-  save_content: true  # 是否保存正文到文件
+  save_content: false  # 不再保存正文到md文件（死代码，无下游消费者）
   dedup: true         # 是否去重
   content_format: "markdown"  # 正文保存格式：markdown | json
   db_path: "data/db/scheduler.sqlite"  # 调度器数据库路径

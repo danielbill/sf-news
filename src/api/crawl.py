@@ -4,7 +4,9 @@
 """
 
 import asyncio
-from datetime import date, datetime
+import json
+from datetime import date, datetime, timezone, timedelta
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException
@@ -21,6 +23,40 @@ router = APIRouter(prefix="/api/crawl", tags=["crawl"])
 _last_crawl_time: Optional[datetime] = None
 # 最小抓取间隔（秒）
 MIN_CRAWL_INTERVAL = 30  # 30秒
+
+# 东八区（和 ghzw 对齐）
+_CST = timezone(timedelta(hours=8))
+
+# JSONL 导出根目录
+_EXPORT_ROOT = Path("data/export")
+
+
+def _export_to_jsonl(article: Article) -> None:
+    """把文章追加到 data/export/YYMMDD/summary_YYMMDD.jsonl
+
+    这是给 agent / ghzw 整合层读取的接口。
+    字段对齐 ghzw 的 summary 格式，额外保留 legend 和 keywords。
+    """
+    today = datetime.now(_CST).strftime("%y%m%d")
+    export_dir = _EXPORT_ROOT / today
+    export_dir.mkdir(parents=True, exist_ok=True)
+    jsonl_path = export_dir / f"summary_{today}.jsonl"
+
+    # source 可能是枚举
+    source_value = article.source.value if hasattr(article.source, "value") else str(article.source)
+
+    record = {
+        "source": source_value,
+        "title": article.title,
+        "url": article.url,
+        "publish_time": article.publish_time.isoformat() if article.publish_time else None,
+        "summary": (article.content or "")[:200],
+        "legend": article.legend,
+        "keywords": article.tags or [],
+    }
+
+    with open(jsonl_path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
 async def run_crawl(source_id: str = None) -> Dict[str, Any]:
@@ -204,6 +240,10 @@ async def run_crawl(source_id: str = None) -> Dict[str, Any]:
                     article.file_path = str(file_path)
 
                 db.insert_article(article)
+
+                # JSONL 导出（给 agent/ghzw 整合层读取的接口）
+                _export_to_jsonl(article)
+
                 saved_count += 1
         except Exception as e:
             print(f"[Crawl] 入库失败: {article.title} - {e}")
