@@ -19,6 +19,11 @@ class SourceType(str, Enum):
     CLS_DEPTH = "cls-depth"
     IFENG = "ifeng"
     TOUTIAO = "toutiao"
+    # AI 专业信源
+    VENTUREBEAT_AI = "venturebeat-ai"
+    KR36_AI = "36kr-ai"
+    MIT_TECH_REVIEW_AI = "mit-tech-review-ai"
+    INFOQ_AI = "infoq-ai"
 
 
 class Article(BaseModel):

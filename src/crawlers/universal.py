@@ -15,6 +15,16 @@ from pathlib import Path
 from ..models import Article, SourceType
 from ..config.reader import ConfigReader
 
+# source.id → 解析器模块名 的映射
+# 仅列出文件名因 Python 模块命名规范（不能以数字开头、不能含连字符）
+# 而与 source.id 不一致的条目；其余 id 直接作为模块名使用。
+_ID_TO_MODULE = {
+    "36kr-ai": "kr36_ai",
+    "venturebeat-ai": "venturebeat_ai",
+    "mit-tech-review-ai": "mit_tech_review_ai",
+    "infoq-ai": "infoq_ai",
+}
+
 
 class UniversalCrawler:
     """通用爬虫 - 根据配置自动加载解析器"""
@@ -101,13 +111,15 @@ class UniversalCrawler:
         Returns:
             解析器模块
         """
-        # 直接使用 source.id 作为模块名
-        module_name = f"src.crawlers.parsers.{self.source.id}"
+        # source.id 可能因为 Python 命名规范（连字符、数字开头）
+        # 与实际模块文件名不一致，通过 _ID_TO_MODULE 做映射。
+        module_suffix = _ID_TO_MODULE.get(self.source.id, self.source.id)
+        module_name = f"src.crawlers.parsers.{module_suffix}"
         try:
             module = importlib.import_module(module_name)
             return module
         except ImportError as e:
-            raise ImportError(f"解析器不存在: {module_name}. 请创建 src/crawlers/parsers/{self.source.id}.py") from e
+            raise ImportError(f"解析器不存在: {module_name}. 请创建 src/crawlers/parsers/{module_suffix}.py") from e
 
     async def _fetch_contents(self, articles: List[Article]):
         """获取文章正文内容"""
