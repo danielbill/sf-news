@@ -69,7 +69,7 @@ sources:
     name: "36氪AI频道"
     type: "ai"
     enabled: true
-    url: "https://36kr.com/information/AI/"
+    url: "https://www.36kr.com/information/AI/"
 
   - id: "mit-tech-review-ai"
     name: "MIT Tech Review AI"

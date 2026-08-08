@@ -12,8 +12,8 @@ from bs4 import BeautifulSoup
 
 from ...models import Article, SourceType
 
-BASE_URL = "https://36kr.com"
-LIST_URL = "https://36kr.com/information/AI/"
+BASE_URL = "https://www.36kr.com"
+LIST_URL = "https://www.36kr.com/information/AI/"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
