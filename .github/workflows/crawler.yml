@@ -18,9 +18,6 @@ jobs:
   crawl:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: write  # 允许推送到仓库
-
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
@@ -51,12 +48,5 @@ jobs:
       - name: 生成静态页面
         run: python -m src.generate_static
 
-      - name: 提交并推送
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add -f data/db/*.sqlite docs/
-          git diff --staged --quiet || git commit -m "📰 自动抓取新闻 [skip ci]"
-          # 推送前先拉取远程更新，避免冲突
-          git pull --rebase --no-edit
-          git push
+      # 注意：不再自动提交/推送，仅运行爬虫并生成静态页面
+      # 如需持久化数据，请使用外部存储方案（如 GitHub Artifacts、S3 等）
