@@ -83,10 +83,34 @@ sources:
     enabled: true
     url: "https://www.infoq.cn/"
 
+  # 航空航天专业信源
+  # keyword_filter: false —— 该源内容 100% 是航空航天，跳过关键词筛选整源放行；
+  # 未标此字段的源（如泰伯网）照常走关键词筛选（其 7x24 含低空经济招标等噪音）
+  - id: "spacenews"
+    name: "SpaceNews"
+    type: "aerospace"
+    enabled: true
+    keyword_filter: false
+    url: "https://spacenews.com/feed/"
+
+  - id: "spaceflightnow"
+    name: "Spaceflight Now"
+    type: "aerospace"
+    enabled: true
+    keyword_filter: false
+    url: "https://spaceflightnow.com/feed/"
+
+  - id: "taibo"
+    name: "泰伯网"
+    type: "aerospace"
+    enabled: true
+    url: "https://www.taibo.cn/"
+
 # 说明：
 # id: 唯一标识符，同时也是解析器文件名（如 parsers/cankaoxiaoxi.py）
 # name: 显示名称
-# type: official（官媒）| financial（财经）| tech（科技）| portal（门户）| ai（AI专业）
+# type: official（官媒）| financial（财经）| tech（科技）| portal（门户）| ai（AI专业）| aerospace（航空航天）
 # enabled: 是否启用该源
 # url: 数据源 URL
 # channels: 仅用于有多频道的源（如参考消息）
+# keyword_filter: false 时跳过关键词筛选（仅用于内容 100% 对口的纯领域源，如 SpaceNews）

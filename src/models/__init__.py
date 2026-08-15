@@ -24,6 +24,10 @@ class SourceType(str, Enum):
     KR36_AI = "36kr-ai"
     MIT_TECH_REVIEW_AI = "mit-tech-review-ai"
     INFOQ_AI = "infoq-ai"
+    # 航空航天专业信源
+    SPACENEWS = "spacenews"
+    SPACEFLIGHTNOW = "spaceflightnow"
+    TAIBO = "taibo"
 
 
 class Article(BaseModel):

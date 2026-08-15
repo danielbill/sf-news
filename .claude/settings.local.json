@@ -49,7 +49,9 @@
       "Bash(git remote set-url:*)",
       "Bash(git diff:*)",
       "mcp__context7__query-docs",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }

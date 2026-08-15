@@ -182,11 +182,24 @@ async def run_crawl(source_id: str = None) -> Dict[str, Any]:
         deduped_articles = []
 
     # 第五层：keywords 筛选
+    # 纯领域源（如 SpaceNews，内容 100% 是航空航天）配置 keyword_filter: false
+    # 后整源放行——它们的大部分标题反而命中不了中文关键词组
     if deduped_articles:
         from ..crawlers.keywords_filter import filter_by_keywords
-        keyword_filtered = filter_by_keywords(deduped_articles)
-        print(f"[Crawl] keywords筛选: {len(deduped_articles)} -> {len(keyword_filtered)} 条")
-        deduped_articles = keyword_filtered
+
+        bypass_ids = {
+            s.id for s in enabled_sources
+            if getattr(s, "keyword_filter", True) is False
+        }
+        to_filter = [a for a in deduped_articles if a.source not in bypass_ids]
+        passthrough = [a for a in deduped_articles if a.source in bypass_ids]
+
+        keyword_filtered = filter_by_keywords(to_filter)
+        print(
+            f"[Crawl] keywords筛选: {len(to_filter)} -> {len(keyword_filtered)} 条"
+            f"（另 {len(passthrough)} 条来自整源放行的纯领域源）"
+        )
+        deduped_articles = keyword_filtered + passthrough
 
     # 统一入库
     saved_count = 0
